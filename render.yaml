@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: scholara-ai-service
+    env: python
+    plan: free  # Change to 'starter' or 'standard' for production
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
+    startCommand: gunicorn ai_service.wsgi:application --bind 0.0.0.0:$PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: DJANGO_SETTINGS_MODULE
+        value: ai_service.settings
+      - key: DEBUG
+        value: False
+      - key: SECRET_KEY
+        generateValue: true
+      - key: CORS_ALLOW_ALL_ORIGINS
+        value: False
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://your-frontend.onrender.com,http://localhost:5173
+        # Update this with your actual frontend Render URL
+
+
