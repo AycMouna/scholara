@@ -55,6 +55,10 @@ def translate_text(text, target_language='en'):
         # Use RapidAPI if configured (priority)
         if rapidapi_key and rapidapi_host:
             # RapidAPI Microsoft Translator API call
+            # Ensure host has https:// scheme
+            if not rapidapi_host.startswith('http://') and not rapidapi_host.startswith('https://'):
+                rapidapi_host = f"https://{rapidapi_host}"
+            
             endpoint = rapidapi_host.rstrip('/')
             constructed_url = f"{endpoint}/translate"
             
@@ -64,7 +68,7 @@ def translate_text(text, target_language='en'):
                 'from': 'auto'  # Auto-detect source language
             }
             
-            # Extract host name from URL (remove https:// and any path)
+            # Extract host name from URL (remove https:// and any path) for X-RapidAPI-Host header
             host_name = rapidapi_host.replace('https://', '').replace('http://', '').split('/')[0]
             
             headers = {
