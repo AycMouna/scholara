@@ -142,6 +142,21 @@ CORS_ALLOWED_ORIGINS = [origin.strip() for origin in CORS_ALLOWED_ORIGINS if ori
 # In production, set CORS_ALLOW_ALL_ORIGINS=False and specify exact origins
 CORS_ALLOW_ALL_ORIGINS = config('CORS_ALLOW_ALL_ORIGINS', default=True, cast=bool)
 
+# Ensure CORS middleware is working
+# These settings ensure CORS works for all requests
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
 # Logging
 LOGGING = {
     'version': 1,
