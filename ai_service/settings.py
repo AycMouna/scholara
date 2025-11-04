@@ -16,7 +16,8 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-ai-service-key')
 DEBUG = config('DEBUG', default=True, cast=bool)
 
 # Allow all hosts for Render (will be set via environment variable)
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,0.0.0.0').split(',')
+ALLOWED_HOSTS = ['scholara-ai-service.onrender.com', 'localhost', '127.0.0.1']
+
 
 # Application definition
 INSTALLED_APPS = [
