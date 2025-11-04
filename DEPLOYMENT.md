@@ -10,8 +10,11 @@ Add these on Render Dashboard → Your Service → Environment:
 ```
 RAPIDAPI_KEY = your-rapidapi-key
 RAPIDAPI_HOST = microsoft-translator-text-api3.p.rapidapi.com
+CORS_ALLOW_ALL_ORIGINS = True  # Allow all origins (for localhost development)
 ```
 *(Get key from https://rapidapi.com - subscribe to Microsoft Translator Text API)*
+
+**Note:** Set `CORS_ALLOW_ALL_ORIGINS=True` on Render to allow requests from your local frontend (`http://localhost:5173`).
 
 **Note:** The code supports both `microsoft-translator-text.p.rapidapi.com` and `microsoft-translator-text-api3.p.rapidapi.com`. Use the one that matches your RapidAPI subscription.
 
