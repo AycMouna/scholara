@@ -16,7 +16,19 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-ai-service-key')
 DEBUG = config('DEBUG', default=True, cast=bool)
 
 # Allow all hosts for Render (will be set via environment variable)
-ALLOWED_HOSTS = ['scholara-ai-service.onrender.com', 'localhost', '127.0.0.1']
+# Support dynamic hostnames from Render
+ALLOWED_HOSTS = config(
+    'ALLOWED_HOSTS',
+    default='localhost,127.0.0.1'
+).split(',')
+
+# Add Render hostname support - allow any .onrender.com domain
+# This is needed because Render might use different subdomains
+import re
+ALLOWED_HOSTS.extend([
+    'scholara-ai-service.onrender.com',
+    '.onrender.com',  # This allows any subdomain on onrender.com
+])
 
 
 # Application definition
