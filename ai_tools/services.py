@@ -66,12 +66,12 @@ def translate_text(text, target_language='en'):
             # Extract host name from URL (remove https:// and any path) for X-RapidAPI-Host header
             host_name = rapidapi_host.replace('https://', '').replace('http://', '').split('/')[0]
             
-            # RapidAPI Microsoft Translator API3 uses /largetranslate endpoint
-            constructed_url = f"{rapidapi_host}/largetranslate"
+            # RapidAPI Microsoft Translator API3 - try /translate first (faster), then /largetranslate
+            endpoints_to_try = ['/translate', '/largetranslate']
             
             # Validate URL format
-            if not constructed_url.startswith('http://') and not constructed_url.startswith('https://'):
-                logger.error(f"❌ Invalid RapidAPI URL: {constructed_url}")
+            if not rapidapi_host.startswith('http://') and not rapidapi_host.startswith('https://'):
+                logger.error(f"❌ Invalid RapidAPI URL: {rapidapi_host}")
                 return {
                     'error': f'Invalid RapidAPI host URL. Please set RAPIDAPI_HOST to a valid URL (e.g., https://microsoft-translator-text-api3.p.rapidapi.com or microsoft-translator-text-api3.p.rapidapi.com)',
                     'translated_text': None,
@@ -92,72 +92,123 @@ def translate_text(text, target_language='en'):
             }
             
             # RapidAPI API3 uses body format: {"text": "..."} or {"sep":"|","text":"..."}
-            # Use the format that matches the working curl command
             body_rapidapi = {'text': text}
             
-            logger.info(f"🔍 Calling RapidAPI: {constructed_url} with host: {host_name}")
+            # Try endpoints in order: /translate first (faster), then /largetranslate
+            last_error = None
+            for endpoint_path in endpoints_to_try:
+                constructed_url = f"{rapidapi_host}{endpoint_path}"
+                logger.info(f"🔍 Trying RapidAPI: {constructed_url} with host: {host_name}")
+                
+                try:
+                    # Use longer timeout for /largetranslate (it might be slower)
+                    timeout = 30 if endpoint_path == '/largetranslate' else 15
+                    response = requests.post(constructed_url, params=params, headers=headers, json=body_rapidapi, timeout=timeout)
+                    
+                    # Log response for debugging
+                    logger.info(f"📡 RapidAPI Response Status: {response.status_code}")
+                    
+                    # If 401, don't try other endpoints
+                    if response.status_code == 401:
+                        logger.error("❌ 401 Unauthorized - Check RapidAPI key and subscription")
+                        try:
+                            error_body = response.text[:200]
+                            logger.error(f"❌ Error response: {error_body}")
+                        except:
+                            pass
+                        return {
+                            'error': f'RapidAPI authentication failed (401). Please verify: 1) Your RapidAPI key is correct, 2) You have subscribed to Microsoft Translator API on RapidAPI, 3) Your subscription is active. Host: {host_name}',
+                            'translated_text': None,
+                            'source_language': None,
+                            'target_language': target_language
+                        }
+                    
+                    # If 403, don't try other endpoints
+                    if response.status_code == 403:
+                        logger.error("❌ 403 Forbidden - Not subscribed to API")
+                        try:
+                            error_body = response.text[:200]
+                            logger.error(f"❌ Error response: {error_body}")
+                        except:
+                            pass
+                        return {
+                            'error': 'RapidAPI subscription required. Please subscribe to Microsoft Translator API on RapidAPI: https://rapidapi.com',
+                            'translated_text': None,
+                            'source_language': None,
+                            'target_language': target_language
+                        }
+                    
+                    # If successful, parse and return
+                    if response.status_code == 200:
+                        response.raise_for_status()
+                        result = response.json()
+                        
+                        # Parse RapidAPI response - handle different response formats
+                        translated_text = None
+                        detected_language = 'auto'
+                        
+                        # Try different response formats
+                        if isinstance(result, list) and len(result) > 0:
+                            # Azure format response: [{"translations": [{"text": "..."}]}]
+                            if 'translations' in result[0]:
+                                translation = result[0]['translations'][0]
+                                translated_text = translation.get('text', '')
+                                detected_language = result[0].get('detectedLanguage', {}).get('language', 'auto')
+                            else:
+                                # Direct translation in result
+                                translated_text = result[0].get('text', '') or result[0].get('translatedText', '')
+                        # RapidAPI format: {"text": "..."} or {"translatedText": "..."} or {"translation": "..."}
+                        elif isinstance(result, dict):
+                            # Try various possible keys
+                            translated_text = (
+                                result.get('text') or 
+                                result.get('translatedText') or 
+                                result.get('translation') or
+                                result.get('translated')
+                            )
+                            detected_language = result.get('detectedLanguage', result.get('from', result.get('sourceLanguage', 'auto')))
+                        
+                        if translated_text:
+                            logger.info(f"✅ Translation successful (RapidAPI {endpoint_path}): {detected_language} → {target_language}")
+                            return {
+                                'translated_text': translated_text,
+                                'source_language': detected_language,
+                                'target_language': target_language,
+                                'original_text': text
+                            }
+                        else:
+                            logger.error(f"❌ Could not parse translation result: {result}")
+                            last_error = f"No translation in response: {result}"
+                            continue  # Try next endpoint
+                    
+                    # If 400 or other error, try next endpoint
+                    if response.status_code == 400:
+                        logger.warning(f"⚠️ {endpoint_path} returned 400, trying next endpoint...")
+                        last_error = response.text[:200]
+                        continue
+                    
+                    # Other status codes, try next endpoint
+                    logger.warning(f"⚠️ {endpoint_path} returned {response.status_code}, trying next endpoint...")
+                    last_error = f"Status {response.status_code}: {response.text[:200]}"
+                    continue
+                    
+                except requests.exceptions.Timeout:
+                    logger.warning(f"⏱️ Timeout on {endpoint_path}, trying next endpoint...")
+                    last_error = f"Timeout on {endpoint_path}"
+                    continue
+                except requests.exceptions.RequestException as e:
+                    logger.warning(f"⚠️ Error on {endpoint_path}: {e}, trying next endpoint...")
+                    last_error = str(e)
+                    continue
             
-            try:
-                # Use RapidAPI format directly (matches working curl command)
-                response = requests.post(constructed_url, params=params, headers=headers, json=body_rapidapi, timeout=10)
-                
-                # Log response for debugging
-                logger.info(f"📡 RapidAPI Response Status: {response.status_code}")
-                
-                if response.status_code == 401:
-                    logger.error("❌ 401 Unauthorized - Check RapidAPI key and subscription")
-                    # Log response body for debugging
-                    try:
-                        error_body = response.text[:200]
-                        logger.error(f"❌ Error response: {error_body}")
-                    except:
-                        pass
-                    return {
-                        'error': f'RapidAPI authentication failed (401). Please verify: 1) Your RapidAPI key is correct, 2) You have subscribed to Microsoft Translator API on RapidAPI, 3) Your subscription is active. Host: {host_name}',
-                        'translated_text': None,
-                        'source_language': None,
-                        'target_language': target_language
-                    }
-                
-                response.raise_for_status()
-                result = response.json()
-                
-                # Parse RapidAPI response - handle different response formats
-                translated_text = None
-                detected_language = 'auto'
-                
-                # Try different response formats
-                if isinstance(result, list) and len(result) > 0:
-                    # Azure format response: [{"translations": [{"text": "..."}]}]
-                    if 'translations' in result[0]:
-                        translation = result[0]['translations'][0]
-                        translated_text = translation.get('text', '')
-                        detected_language = result[0].get('detectedLanguage', {}).get('language', 'auto')
-                    else:
-                        # Direct translation in result
-                        translated_text = result[0].get('text', '') or result[0].get('translatedText', '')
-                # RapidAPI format: {"text": "..."} or {"translatedText": "..."} or {"translation": "..."}
-                elif isinstance(result, dict):
-                    # Try various possible keys
-                    translated_text = (
-                        result.get('text') or 
-                        result.get('translatedText') or 
-                        result.get('translation') or
-                        result.get('translated')
-                    )
-                    detected_language = result.get('detectedLanguage', result.get('from', result.get('sourceLanguage', 'auto')))
-                
-                if translated_text:
-                    logger.info(f"✅ Translation successful (RapidAPI): {detected_language} → {target_language}")
-                    return {
-                        'translated_text': translated_text,
-                        'source_language': detected_language,
-                        'target_language': target_language,
-                        'original_text': text
-                    }
-                else:
-                    logger.error(f"❌ Could not parse translation result: {result}")
-                    raise Exception(f"No translation result returned from RapidAPI. Response: {result}")
+            # All endpoints failed
+            logger.error(f"❌ All RapidAPI endpoints failed. Last error: {last_error}")
+            return {
+                'error': f'RapidAPI request failed after trying all endpoints. Last error: {last_error}',
+                'translated_text': None,
+                'source_language': None,
+                'target_language': target_language
+            }
             except requests.exceptions.HTTPError as e:
                 logger.error(f"❌ RapidAPI HTTP Error {response.status_code}: {response.text}")
                 return {
