@@ -66,9 +66,8 @@ def translate_text(text, target_language='en'):
             # Extract host name from URL (remove https:// and any path) for X-RapidAPI-Host header
             host_name = rapidapi_host.replace('https://', '').replace('http://', '').split('/')[0]
             
-            # Try /translate endpoint first (standard), fallback to /largetranslate if needed
-            # RapidAPI Microsoft Translator API uses /translate endpoint
-            constructed_url = f"{rapidapi_host}/translate"
+            # RapidAPI Microsoft Translator API3 uses /largetranslate endpoint
+            constructed_url = f"{rapidapi_host}/largetranslate"
             
             # Validate URL format
             if not constructed_url.startswith('http://') and not constructed_url.startswith('https://'):
@@ -80,7 +79,7 @@ def translate_text(text, target_language='en'):
                     'target_language': target_language
                 }
             
-            # RapidAPI Microsoft Translator uses query parameters
+            # RapidAPI Microsoft Translator API3 uses query parameters
             params = {
                 'to': target_language,
                 'from': 'auto'  # Auto-detect source language
@@ -92,25 +91,18 @@ def translate_text(text, target_language='en'):
                 'Content-Type': 'application/json'
             }
             
-            # RapidAPI uses different body format: {"text": "..."} not [{"text": "..."}]
-            # Try Azure format first, then RapidAPI format if it fails
-            body_azure = [{'text': text}]
+            # RapidAPI API3 uses body format: {"text": "..."} or {"sep":"|","text":"..."}
+            # Use the format that matches the working curl command
             body_rapidapi = {'text': text}
             
             logger.info(f"🔍 Calling RapidAPI: {constructed_url} with host: {host_name}")
             
             try:
-                # Try Azure format first (standard Microsoft Translator format)
-                response = requests.post(constructed_url, params=params, headers=headers, json=body_azure, timeout=10)
+                # Use RapidAPI format directly (matches working curl command)
+                response = requests.post(constructed_url, params=params, headers=headers, json=body_rapidapi, timeout=10)
                 
                 # Log response for debugging
                 logger.info(f"📡 RapidAPI Response Status: {response.status_code}")
-                
-                # If 401 or 400, try RapidAPI format
-                if response.status_code in [401, 400]:
-                    logger.info("🔄 Trying RapidAPI format instead of Azure format...")
-                    response = requests.post(constructed_url, params=params, headers=headers, json=body_rapidapi, timeout=10)
-                    logger.info(f"📡 RapidAPI Response Status (retry): {response.status_code}")
                 
                 if response.status_code == 401:
                     logger.error("❌ 401 Unauthorized - Check RapidAPI key and subscription")
@@ -130,12 +122,13 @@ def translate_text(text, target_language='en'):
                 response.raise_for_status()
                 result = response.json()
                 
-                # Parse RapidAPI response - handle both Azure format and RapidAPI format
+                # Parse RapidAPI response - handle different response formats
                 translated_text = None
                 detected_language = 'auto'
                 
-                # Try Azure format response: [{"translations": [{"text": "..."}]}]
+                # Try different response formats
                 if isinstance(result, list) and len(result) > 0:
+                    # Azure format response: [{"translations": [{"text": "..."}]}]
                     if 'translations' in result[0]:
                         translation = result[0]['translations'][0]
                         translated_text = translation.get('text', '')
@@ -143,10 +136,16 @@ def translate_text(text, target_language='en'):
                     else:
                         # Direct translation in result
                         translated_text = result[0].get('text', '') or result[0].get('translatedText', '')
-                # Try RapidAPI format: {"text": "..."} or {"translatedText": "..."}
+                # RapidAPI format: {"text": "..."} or {"translatedText": "..."} or {"translation": "..."}
                 elif isinstance(result, dict):
-                    translated_text = result.get('text', '') or result.get('translatedText', '') or result.get('translation', '')
-                    detected_language = result.get('detectedLanguage', result.get('from', 'auto'))
+                    # Try various possible keys
+                    translated_text = (
+                        result.get('text') or 
+                        result.get('translatedText') or 
+                        result.get('translation') or
+                        result.get('translated')
+                    )
+                    detected_language = result.get('detectedLanguage', result.get('from', result.get('sourceLanguage', 'auto')))
                 
                 if translated_text:
                     logger.info(f"✅ Translation successful (RapidAPI): {detected_language} → {target_language}")
