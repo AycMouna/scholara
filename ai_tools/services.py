@@ -1,10 +1,12 @@
 """
 AI services for translation and summarization.
-Using simple built-in functions and basic text processing.
-For production, integrate with Azure Translator API or Google Cloud Translation.
+Using Azure Translator API for real translation.
 """
 import logging
 import re
+import requests
+from django.conf import settings
+from decouple import config
 
 logger = logging.getLogger(__name__)
 
@@ -24,13 +26,7 @@ LANGUAGE_CODES = list(LANGUAGE_MAP.keys())
 
 def translate_text(text, target_language='en'):
     """
-    Translate text to target language.
-    
-    NOTE: This is a placeholder implementation.
-    For production, integrate with:
-    - Azure Translator API (https://azure.microsoft.com/services/cognitive-services/translator/)
-    - Google Cloud Translation API
-    - AWS Translate
+    Translate text to target language using Azure Translator API.
     
     Args:
         text: Text to translate
@@ -48,20 +44,70 @@ def translate_text(text, target_language='en'):
                 'target_language': target_language
             }
         
-        # Placeholder: Return original text with note
-        # In production, replace this with actual translation API call
-        # Example for Azure:
-        # from azure.ai.translation.text import TextTranslationClient, TranslatorCredential
-        # client = TextTranslationClient(credential=TranslatorCredential(key, region))
-        # result = client.translate(content=[text], to=[target_language])
-        # translated = result[0].translations[0].text
+        # Get Azure Translator credentials from settings
+        azure_key = config('AZURE_TRANSLATOR_KEY', default=None)
+        azure_endpoint = config('AZURE_TRANSLATOR_ENDPOINT', default=None)
+        azure_region = config('AZURE_TRANSLATOR_REGION', default=None)
         
+        # Fallback to placeholder if Azure credentials are not configured
+        if not azure_key or not azure_endpoint:
+            logger.warning("Azure Translator credentials not configured. Using placeholder.")
+            return {
+                'translated_text': f"[{target_language.upper()}] {text}",
+                'source_language': 'auto',
+                'target_language': target_language,
+                'original_text': text,
+                'note': 'Azure Translator API credentials not configured. Set AZURE_TRANSLATOR_KEY and AZURE_TRANSLATOR_ENDPOINT environment variables.'
+            }
+        
+        # Azure Translator API call
+        endpoint = azure_endpoint.rstrip('/')
+        path = '/translate'
+        constructed_url = f"{endpoint}{path}"
+        
+        params = {
+            'api-version': '3.0',
+            'to': target_language
+        }
+        
+        headers = {
+            'Ocp-Apim-Subscription-Key': azure_key,
+            'Content-Type': 'application/json'
+        }
+        
+        if azure_region:
+            headers['Ocp-Apim-Subscription-Region'] = azure_region
+        
+        body = [{'text': text}]
+        
+        response = requests.post(constructed_url, params=params, headers=headers, json=body, timeout=10)
+        response.raise_for_status()
+        
+        result = response.json()
+        
+        if result and len(result) > 0:
+            translation = result[0]['translations'][0]
+            translated_text = translation['text']
+            detected_language = result[0].get('detectedLanguage', {}).get('language', 'auto')
+            
+            logger.info(f"✅ Translation successful: {detected_language} → {target_language}")
+            
+            return {
+                'translated_text': translated_text,
+                'source_language': detected_language,
+                'target_language': target_language,
+                'original_text': text
+            }
+        else:
+            raise Exception("No translation result returned from Azure API")
+            
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Azure Translator API request error: {e}")
         return {
-            'translated_text': f"[{target_language.upper()}] {text}",
-            'source_language': 'auto',
-            'target_language': target_language,
-            'original_text': text,
-            'note': 'This is a placeholder. Integrate with Azure Translator API or Google Cloud Translation for production.'
+            'error': f'Translation API error: {str(e)}',
+            'translated_text': None,
+            'source_language': None,
+            'target_language': target_language
         }
     except Exception as e:
         logger.error(f"Translation error: {e}")
