@@ -5,6 +5,8 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from .services import translate_text, summarize_text, get_supported_languages
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
 import logging
 
 logger = logging.getLogger(__name__)
@@ -68,8 +70,24 @@ def translate(request):
             )
         
         result = translate_text(text, target_language)
-        
+
         if result.get('error'):
+            # Return error with CORS headers (Response will handle this)
+            # But provide a more helpful error message
+            error_msg = result.get('error', 'Translation failed')
+            # If it's a timeout, suggest fallback
+            if 'timeout' in error_msg.lower() or 'timed out' in error_msg.lower():
+                return Response(
+                    {
+                        'error': 'Translation service is currently slow. Please try again in a moment.',
+                        'details': error_msg,
+                        'translated_text': None,
+                        'source_language': None,
+                        'target_language': target_language,
+                        'suggestion': 'The RapidAPI service is taking longer than expected. Please retry or check your API subscription.'
+                    },
+                    status=status.HTTP_408_REQUEST_TIMEOUT
+                )
             return Response(
                 result,
                 status=status.HTTP_400_BAD_REQUEST
