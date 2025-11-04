@@ -62,26 +62,29 @@ def translate_text(text, target_language='en'):
             
             # Clean up the URL
             rapidapi_host = rapidapi_host.rstrip('/')
+            
+            # Extract host name from URL (remove https:// and any path) for X-RapidAPI-Host header
+            host_name = rapidapi_host.replace('https://', '').replace('http://', '').split('/')[0]
+            
+            # Try /translate endpoint first (standard), fallback to /largetranslate if needed
+            # RapidAPI Microsoft Translator API uses /translate endpoint
             constructed_url = f"{rapidapi_host}/translate"
             
             # Validate URL format
             if not constructed_url.startswith('http://') and not constructed_url.startswith('https://'):
                 logger.error(f"❌ Invalid RapidAPI URL: {constructed_url}")
                 return {
-                    'error': f'Invalid RapidAPI host URL. Please set RAPIDAPI_HOST to a valid URL (e.g., https://microsoft-translator-text.p.rapidapi.com or microsoft-translator-text.p.rapidapi.com)',
+                    'error': f'Invalid RapidAPI host URL. Please set RAPIDAPI_HOST to a valid URL (e.g., https://microsoft-translator-text-api3.p.rapidapi.com or microsoft-translator-text-api3.p.rapidapi.com)',
                     'translated_text': None,
                     'source_language': None,
                     'target_language': target_language
                 }
             
+            # RapidAPI Microsoft Translator uses query parameters
             params = {
-                'api-version': '3.0',
                 'to': target_language,
                 'from': 'auto'  # Auto-detect source language
             }
-            
-            # Extract host name from URL (remove https:// and any path) for X-RapidAPI-Host header
-            host_name = rapidapi_host.replace('https://', '').replace('http://', '').split('/')[0]
             
             headers = {
                 'X-RapidAPI-Key': rapidapi_key.strip(),  # Remove any whitespace
@@ -89,21 +92,36 @@ def translate_text(text, target_language='en'):
                 'Content-Type': 'application/json'
             }
             
-            # RapidAPI uses same request body format as Azure
-            body = [{'text': text}]
+            # RapidAPI uses different body format: {"text": "..."} not [{"text": "..."}]
+            # Try Azure format first, then RapidAPI format if it fails
+            body_azure = [{'text': text}]
+            body_rapidapi = {'text': text}
             
             logger.info(f"🔍 Calling RapidAPI: {constructed_url} with host: {host_name}")
             
             try:
-                response = requests.post(constructed_url, params=params, headers=headers, json=body, timeout=10)
+                # Try Azure format first (standard Microsoft Translator format)
+                response = requests.post(constructed_url, params=params, headers=headers, json=body_azure, timeout=10)
                 
                 # Log response for debugging
                 logger.info(f"📡 RapidAPI Response Status: {response.status_code}")
                 
+                # If 401 or 400, try RapidAPI format
+                if response.status_code in [401, 400]:
+                    logger.info("🔄 Trying RapidAPI format instead of Azure format...")
+                    response = requests.post(constructed_url, params=params, headers=headers, json=body_rapidapi, timeout=10)
+                    logger.info(f"📡 RapidAPI Response Status (retry): {response.status_code}")
+                
                 if response.status_code == 401:
                     logger.error("❌ 401 Unauthorized - Check RapidAPI key and subscription")
+                    # Log response body for debugging
+                    try:
+                        error_body = response.text[:200]
+                        logger.error(f"❌ Error response: {error_body}")
+                    except:
+                        pass
                     return {
-                        'error': 'RapidAPI authentication failed. Please verify: 1) Your RapidAPI key is correct, 2) You have subscribed to Microsoft Translator API on RapidAPI, 3) Your subscription is active.',
+                        'error': f'RapidAPI authentication failed (401). Please verify: 1) Your RapidAPI key is correct, 2) You have subscribed to Microsoft Translator API on RapidAPI, 3) Your subscription is active. Host: {host_name}',
                         'translated_text': None,
                         'source_language': None,
                         'target_language': target_language
@@ -112,14 +130,26 @@ def translate_text(text, target_language='en'):
                 response.raise_for_status()
                 result = response.json()
                 
-                # Parse RapidAPI response (same format as Azure)
-                if result and len(result) > 0:
-                    translation = result[0]['translations'][0]
-                    translated_text = translation['text']
-                    detected_language = result[0].get('detectedLanguage', {}).get('language', 'auto')
-                    
+                # Parse RapidAPI response - handle both Azure format and RapidAPI format
+                translated_text = None
+                detected_language = 'auto'
+                
+                # Try Azure format response: [{"translations": [{"text": "..."}]}]
+                if isinstance(result, list) and len(result) > 0:
+                    if 'translations' in result[0]:
+                        translation = result[0]['translations'][0]
+                        translated_text = translation.get('text', '')
+                        detected_language = result[0].get('detectedLanguage', {}).get('language', 'auto')
+                    else:
+                        # Direct translation in result
+                        translated_text = result[0].get('text', '') or result[0].get('translatedText', '')
+                # Try RapidAPI format: {"text": "..."} or {"translatedText": "..."}
+                elif isinstance(result, dict):
+                    translated_text = result.get('text', '') or result.get('translatedText', '') or result.get('translation', '')
+                    detected_language = result.get('detectedLanguage', result.get('from', 'auto'))
+                
+                if translated_text:
                     logger.info(f"✅ Translation successful (RapidAPI): {detected_language} → {target_language}")
-                    
                     return {
                         'translated_text': translated_text,
                         'source_language': detected_language,
@@ -127,7 +157,8 @@ def translate_text(text, target_language='en'):
                         'original_text': text
                     }
                 else:
-                    raise Exception("No translation result returned from RapidAPI")
+                    logger.error(f"❌ Could not parse translation result: {result}")
+                    raise Exception(f"No translation result returned from RapidAPI. Response: {result}")
             except requests.exceptions.HTTPError as e:
                 logger.error(f"❌ RapidAPI HTTP Error {response.status_code}: {response.text}")
                 return {
