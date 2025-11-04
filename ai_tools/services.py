@@ -209,14 +209,6 @@ def translate_text(text, target_language='en'):
                 'source_language': None,
                 'target_language': target_language
             }
-            except requests.exceptions.HTTPError as e:
-                logger.error(f"❌ RapidAPI HTTP Error {response.status_code}: {response.text}")
-                return {
-                    'error': f'RapidAPI error ({response.status_code}): {response.text[:200]}',
-                    'translated_text': None,
-                    'source_language': None,
-                    'target_language': target_language
-                }
         
         # Fallback to Azure Translator if configured
         elif azure_key and azure_endpoint:
