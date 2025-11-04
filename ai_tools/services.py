@@ -56,11 +56,23 @@ def translate_text(text, target_language='en'):
         if rapidapi_key and rapidapi_host:
             # RapidAPI Microsoft Translator API call
             # Ensure host has https:// scheme
+            rapidapi_host = rapidapi_host.strip()  # Remove any whitespace
             if not rapidapi_host.startswith('http://') and not rapidapi_host.startswith('https://'):
                 rapidapi_host = f"https://{rapidapi_host}"
             
-            endpoint = rapidapi_host.rstrip('/')
-            constructed_url = f"{endpoint}/translate"
+            # Clean up the URL
+            rapidapi_host = rapidapi_host.rstrip('/')
+            constructed_url = f"{rapidapi_host}/translate"
+            
+            # Validate URL format
+            if not constructed_url.startswith('http://') and not constructed_url.startswith('https://'):
+                logger.error(f"❌ Invalid RapidAPI URL: {constructed_url}")
+                return {
+                    'error': f'Invalid RapidAPI host URL. Please set RAPIDAPI_HOST to a valid URL (e.g., https://microsoft-translator-text.p.rapidapi.com or microsoft-translator-text.p.rapidapi.com)',
+                    'translated_text': None,
+                    'source_language': None,
+                    'target_language': target_language
+                }
             
             params = {
                 'api-version': '3.0',
