@@ -9,9 +9,11 @@ Add these on Render Dashboard → Your Service → Environment:
 **For RapidAPI (Recommended):**
 ```
 RAPIDAPI_KEY = your-rapidapi-key
-RAPIDAPI_HOST = microsoft-translator-text.p.rapidapi.com
+RAPIDAPI_HOST = microsoft-translator-text-api3.p.rapidapi.com
 ```
 *(Get key from https://rapidapi.com - subscribe to Microsoft Translator Text API)*
+
+**Note:** The code supports both `microsoft-translator-text.p.rapidapi.com` and `microsoft-translator-text-api3.p.rapidapi.com`. Use the one that matches your RapidAPI subscription.
 
 **For Azure Translator (Alternative):**
 ```
