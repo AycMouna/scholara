@@ -29,7 +29,9 @@ AZURE_TRANSLATOR_REGION = westeurope
 
 - **Root Directory:** `backend/ai-service`
 - **Build Command:** `pip install -r requirements.txt && python manage.py collectstatic --noinput`
-- **Start Command:** `gunicorn ai_service.wsgi:application --bind 0.0.0.0:$PORT`
+- **Start Command:** `gunicorn ai_service.wsgi:application --bind 0.0.0.0:$PORT --timeout 25 --workers 2 --threads 2`
+
+**Important:** The `--timeout 25` prevents worker timeout on Render free tier (30s limit).
 
 ### 3. Test
 
