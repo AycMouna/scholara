@@ -18,6 +18,8 @@ CORS_ALLOW_ALL_ORIGINS = True  # Allow all origins (for localhost development)
 
 **Note:** The code supports both `microsoft-translator-text.p.rapidapi.com` and `microsoft-translator-text-api3.p.rapidapi.com`. Use the one that matches your RapidAPI subscription.
 
+**⚠️ Important:** If RapidAPI returns 502 errors (service unavailable), the API provider is down. Consider using Azure Translator API as a more reliable alternative.
+
 **For Azure Translator (Alternative):**
 ```
 AZURE_TRANSLATOR_KEY = your-azure-key

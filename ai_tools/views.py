@@ -75,6 +75,21 @@ def translate(request):
             # Return error with CORS headers (Response will handle this)
             # But provide a more helpful error message
             error_msg = result.get('error', 'Translation failed')
+            
+            # If it's a 502 (service down), return 503 Service Unavailable
+            if '502' in error_msg or 'bad gateway' in error_msg.lower() or 'unavailable' in error_msg.lower():
+                return Response(
+                    {
+                        'error': 'Translation service is currently unavailable. The API provider is down.',
+                        'details': error_msg,
+                        'translated_text': None,
+                        'source_language': None,
+                        'target_language': target_language,
+                        'suggestion': result.get('suggestion', 'Please try again later or set up Azure Translator API as an alternative.')
+                    },
+                    status=status.HTTP_503_SERVICE_UNAVAILABLE
+                )
+            
             # If it's a timeout, suggest fallback
             if 'timeout' in error_msg.lower() or 'timed out' in error_msg.lower():
                 return Response(
@@ -88,6 +103,7 @@ def translate(request):
                     },
                     status=status.HTTP_408_REQUEST_TIMEOUT
                 )
+            
             return Response(
                 result,
                 status=status.HTTP_400_BAD_REQUEST

@@ -204,6 +204,18 @@ def translate_text(text, target_language='en'):
             
             # All endpoints failed
             logger.error(f"❌ All RapidAPI endpoints failed. Last error: {last_error}")
+            
+            # If it's a timeout, provide a more helpful error
+            if 'timeout' in str(last_error).lower() or 'timed out' in str(last_error).lower():
+                return {
+                    'error': f'RapidAPI request timed out. The translation service is responding slowly. Please try again or check your RapidAPI subscription status.',
+                    'details': str(last_error),
+                    'translated_text': None,
+                    'source_language': None,
+                    'target_language': target_language,
+                    'suggestion': 'Try again in a few moments, or verify your RapidAPI subscription is active and has not exceeded rate limits.'
+                }
+            
             return {
                 'error': f'RapidAPI request failed after trying all endpoints. Last error: {last_error}',
                 'translated_text': None,
