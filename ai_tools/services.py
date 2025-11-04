@@ -60,14 +60,15 @@ def translate_text(text, target_language='en'):
             
             params = {
                 'api-version': '3.0',
-                'to': target_language
+                'to': target_language,
+                'from': 'auto'  # Auto-detect source language
             }
             
-            # Extract host name from URL (remove https://)
+            # Extract host name from URL (remove https:// and any path)
             host_name = rapidapi_host.replace('https://', '').replace('http://', '').split('/')[0]
             
             headers = {
-                'X-RapidAPI-Key': rapidapi_key,
+                'X-RapidAPI-Key': rapidapi_key.strip(),  # Remove any whitespace
                 'X-RapidAPI-Host': host_name,
                 'Content-Type': 'application/json'
             }
@@ -75,27 +76,50 @@ def translate_text(text, target_language='en'):
             # RapidAPI uses same request body format as Azure
             body = [{'text': text}]
             
-            response = requests.post(constructed_url, params=params, headers=headers, json=body, timeout=10)
-            response.raise_for_status()
+            logger.info(f"🔍 Calling RapidAPI: {constructed_url} with host: {host_name}")
             
-            result = response.json()
-            
-            # Parse RapidAPI response (same format as Azure)
-            if result and len(result) > 0:
-                translation = result[0]['translations'][0]
-                translated_text = translation['text']
-                detected_language = result[0].get('detectedLanguage', {}).get('language', 'auto')
+            try:
+                response = requests.post(constructed_url, params=params, headers=headers, json=body, timeout=10)
                 
-                logger.info(f"✅ Translation successful (RapidAPI): {detected_language} → {target_language}")
+                # Log response for debugging
+                logger.info(f"📡 RapidAPI Response Status: {response.status_code}")
                 
+                if response.status_code == 401:
+                    logger.error("❌ 401 Unauthorized - Check RapidAPI key and subscription")
+                    return {
+                        'error': 'RapidAPI authentication failed. Please verify: 1) Your RapidAPI key is correct, 2) You have subscribed to Microsoft Translator API on RapidAPI, 3) Your subscription is active.',
+                        'translated_text': None,
+                        'source_language': None,
+                        'target_language': target_language
+                    }
+                
+                response.raise_for_status()
+                result = response.json()
+                
+                # Parse RapidAPI response (same format as Azure)
+                if result and len(result) > 0:
+                    translation = result[0]['translations'][0]
+                    translated_text = translation['text']
+                    detected_language = result[0].get('detectedLanguage', {}).get('language', 'auto')
+                    
+                    logger.info(f"✅ Translation successful (RapidAPI): {detected_language} → {target_language}")
+                    
+                    return {
+                        'translated_text': translated_text,
+                        'source_language': detected_language,
+                        'target_language': target_language,
+                        'original_text': text
+                    }
+                else:
+                    raise Exception("No translation result returned from RapidAPI")
+            except requests.exceptions.HTTPError as e:
+                logger.error(f"❌ RapidAPI HTTP Error {response.status_code}: {response.text}")
                 return {
-                    'translated_text': translated_text,
-                    'source_language': detected_language,
-                    'target_language': target_language,
-                    'original_text': text
+                    'error': f'RapidAPI error ({response.status_code}): {response.text[:200]}',
+                    'translated_text': None,
+                    'source_language': None,
+                    'target_language': target_language
                 }
-            else:
-                raise Exception("No translation result returned from RapidAPI")
         
         # Fallback to Azure Translator if configured
         elif azure_key and azure_endpoint:
