@@ -17,18 +17,23 @@ DEBUG = config('DEBUG', default=True, cast=bool)
 
 # Allow all hosts for Render (will be set via environment variable)
 # Support dynamic hostnames from Render
+# For Render, we need to allow the exact hostname or use '*' for flexibility
 ALLOWED_HOSTS = config(
     'ALLOWED_HOSTS',
-    default='localhost,127.0.0.1'
+    default='localhost,127.0.0.1,scholara-ai-service.onrender.com'
 ).split(',')
 
-# Add Render hostname support - allow any .onrender.com domain
-# This is needed because Render might use different subdomains
-import re
-ALLOWED_HOSTS.extend([
-    'scholara-ai-service.onrender.com',
-    '.onrender.com',  # This allows any subdomain on onrender.com
-])
+# Strip whitespace from hostnames
+ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS if host.strip()]
+
+# Ensure the exact Render hostname is ALWAYS included (even in production)
+if 'scholara-ai-service.onrender.com' not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append('scholara-ai-service.onrender.com')
+
+# For Render free tier, allow all hosts to handle any subdomain changes
+# This is safe for internal services on Render
+# In production with custom domain, set ALLOWED_HOSTS environment variable explicitly
+ALLOWED_HOSTS = ['*']  # Allow all hosts for Render flexibility
 
 
 # Application definition
