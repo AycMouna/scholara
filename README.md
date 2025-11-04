@@ -78,13 +78,15 @@ For production, integrate with cloud services:
 
 See `DEPLOYMENT.md` for detailed deployment instructions.
 
-## 📝 Current Implementation
+## 📝 Translation Integration
 
-The current implementation uses **placeholder functions** to demonstrate the API structure. To enable real translation and summarization:
+The service supports both **RapidAPI** and **Azure Translator API**:
 
-1. Add cloud translation API credentials
-2. Update `ai_tools/services.py` to call the actual APIs
-3. See `DEPLOYMENT.md` for integration examples
+1. **RapidAPI** (priority): Set `RAPIDAPI_KEY` and `RAPIDAPI_HOST` environment variables
+2. **Azure Translator**: Set `AZURE_TRANSLATOR_KEY`, `AZURE_TRANSLATOR_ENDPOINT`, and `AZURE_TRANSLATOR_REGION`
+3. **Fallback**: If neither is configured, uses placeholder functions
+
+See `DEPLOYMENT.md` and `RAPIDAPI_SETUP.md` for setup instructions.
 
 ## 🔗 Related Services
 
