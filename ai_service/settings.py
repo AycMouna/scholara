@@ -135,7 +135,11 @@ CORS_ALLOWED_ORIGINS = config(
     default='http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173'
 ).split(',')
 
+# Strip whitespace from origins
+CORS_ALLOWED_ORIGINS = [origin.strip() for origin in CORS_ALLOWED_ORIGINS if origin.strip()]
+
 # For development, allow all origins (set to False in production)
+# In production, set CORS_ALLOW_ALL_ORIGINS=False and specify exact origins
 CORS_ALLOW_ALL_ORIGINS = config('CORS_ALLOW_ALL_ORIGINS', default=True, cast=bool)
 
 # Logging

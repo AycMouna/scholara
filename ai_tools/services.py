@@ -101,8 +101,9 @@ def translate_text(text, target_language='en'):
                 logger.info(f"🔍 Trying RapidAPI: {constructed_url} with host: {host_name}")
                 
                 try:
-                    # Use longer timeout for /largetranslate (it might be slower)
-                    timeout = 30 if endpoint_path == '/largetranslate' else 15
+                    # Use shorter timeout to avoid worker timeout (Render free tier has 30s limit)
+                    # Try /translate with 8s, /largetranslate with 20s
+                    timeout = 20 if endpoint_path == '/largetranslate' else 8
                     response = requests.post(constructed_url, params=params, headers=headers, json=body_rapidapi, timeout=timeout)
                     
                     # Log response for debugging
