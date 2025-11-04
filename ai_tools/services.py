@@ -44,62 +44,112 @@ def translate_text(text, target_language='en'):
                 'target_language': target_language
             }
         
-        # Get Azure Translator credentials from settings
+        # Check if using RapidAPI or Azure Translator
+        rapidapi_key = config('RAPIDAPI_KEY', default=None)
+        rapidapi_host = config('RAPIDAPI_HOST', default=None)
+        
         azure_key = config('AZURE_TRANSLATOR_KEY', default=None)
         azure_endpoint = config('AZURE_TRANSLATOR_ENDPOINT', default=None)
         azure_region = config('AZURE_TRANSLATOR_REGION', default=None)
         
-        # Fallback to placeholder if Azure credentials are not configured
-        if not azure_key or not azure_endpoint:
-            logger.warning("Azure Translator credentials not configured. Using placeholder.")
+        # Use RapidAPI if configured (priority)
+        if rapidapi_key and rapidapi_host:
+            # RapidAPI Microsoft Translator API call
+            endpoint = rapidapi_host.rstrip('/')
+            constructed_url = f"{endpoint}/translate"
+            
+            params = {
+                'api-version': '3.0',
+                'to': target_language
+            }
+            
+            # Extract host name from URL (remove https://)
+            host_name = rapidapi_host.replace('https://', '').replace('http://', '').split('/')[0]
+            
+            headers = {
+                'X-RapidAPI-Key': rapidapi_key,
+                'X-RapidAPI-Host': host_name,
+                'Content-Type': 'application/json'
+            }
+            
+            # RapidAPI uses same request body format as Azure
+            body = [{'text': text}]
+            
+            response = requests.post(constructed_url, params=params, headers=headers, json=body, timeout=10)
+            response.raise_for_status()
+            
+            result = response.json()
+            
+            # Parse RapidAPI response (same format as Azure)
+            if result and len(result) > 0:
+                translation = result[0]['translations'][0]
+                translated_text = translation['text']
+                detected_language = result[0].get('detectedLanguage', {}).get('language', 'auto')
+                
+                logger.info(f"✅ Translation successful (RapidAPI): {detected_language} → {target_language}")
+                
+                return {
+                    'translated_text': translated_text,
+                    'source_language': detected_language,
+                    'target_language': target_language,
+                    'original_text': text
+                }
+            else:
+                raise Exception("No translation result returned from RapidAPI")
+        
+        # Fallback to Azure Translator if configured
+        elif azure_key and azure_endpoint:
+            # Azure Translator API call
+            endpoint = azure_endpoint.rstrip('/')
+            path = '/translate'
+            constructed_url = f"{endpoint}{path}"
+            
+            params = {
+                'api-version': '3.0',
+                'to': target_language
+            }
+            
+            headers = {
+                'Ocp-Apim-Subscription-Key': azure_key,
+                'Content-Type': 'application/json'
+            }
+            
+            if azure_region:
+                headers['Ocp-Apim-Subscription-Region'] = azure_region
+            
+            body = [{'text': text}]
+            
+            response = requests.post(constructed_url, params=params, headers=headers, json=body, timeout=10)
+            response.raise_for_status()
+            
+            result = response.json()
+            
+            if result and len(result) > 0:
+                translation = result[0]['translations'][0]
+                translated_text = translation['text']
+                detected_language = result[0].get('detectedLanguage', {}).get('language', 'auto')
+                
+                logger.info(f"✅ Translation successful (Azure): {detected_language} → {target_language}")
+                
+                return {
+                    'translated_text': translated_text,
+                    'source_language': detected_language,
+                    'target_language': target_language,
+                    'original_text': text
+                }
+            else:
+                raise Exception("No translation result returned from Azure API")
+        
+        # Fallback to placeholder if neither is configured
+        else:
+            logger.warning("No translation API credentials configured. Using placeholder.")
             return {
                 'translated_text': f"[{target_language.upper()}] {text}",
                 'source_language': 'auto',
                 'target_language': target_language,
                 'original_text': text,
-                'note': 'Azure Translator API credentials not configured. Set AZURE_TRANSLATOR_KEY and AZURE_TRANSLATOR_ENDPOINT environment variables.'
+                'note': 'Translation API credentials not configured. Set RAPIDAPI_KEY and RAPIDAPI_HOST (for RapidAPI) or AZURE_TRANSLATOR_KEY and AZURE_TRANSLATOR_ENDPOINT (for Azure).'
             }
-        
-        # Azure Translator API call
-        endpoint = azure_endpoint.rstrip('/')
-        path = '/translate'
-        constructed_url = f"{endpoint}{path}"
-        
-        params = {
-            'api-version': '3.0',
-            'to': target_language
-        }
-        
-        headers = {
-            'Ocp-Apim-Subscription-Key': azure_key,
-            'Content-Type': 'application/json'
-        }
-        
-        if azure_region:
-            headers['Ocp-Apim-Subscription-Region'] = azure_region
-        
-        body = [{'text': text}]
-        
-        response = requests.post(constructed_url, params=params, headers=headers, json=body, timeout=10)
-        response.raise_for_status()
-        
-        result = response.json()
-        
-        if result and len(result) > 0:
-            translation = result[0]['translations'][0]
-            translated_text = translation['text']
-            detected_language = result[0].get('detectedLanguage', {}).get('language', 'auto')
-            
-            logger.info(f"✅ Translation successful: {detected_language} → {target_language}")
-            
-            return {
-                'translated_text': translated_text,
-                'source_language': detected_language,
-                'target_language': target_language,
-                'original_text': text
-            }
-        else:
-            raise Exception("No translation result returned from Azure API")
             
     except requests.exceptions.RequestException as e:
         logger.error(f"Azure Translator API request error: {e}")
