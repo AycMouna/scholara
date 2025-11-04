@@ -10,7 +10,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-@api_view(['POST', 'GET'])
+@api_view(['POST', 'GET'])  # Updated: Now supports both GET and POST methods
 def translate(request):
     """
     Translate text to target language.
