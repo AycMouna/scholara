@@ -86,7 +86,7 @@ The service supports both **RapidAPI** and **Azure Translator API**:
 2. **Azure Translator**: Set `AZURE_TRANSLATOR_KEY`, `AZURE_TRANSLATOR_ENDPOINT`, and `AZURE_TRANSLATOR_REGION`
 3. **Fallback**: If neither is configured, uses placeholder functions
 
-See `DEPLOYMENT.md` and `RAPIDAPI_SETUP.md` for setup instructions.
+See `DEPLOYMENT.md` for setup instructions.
 
 ## 🔗 Related Services
 

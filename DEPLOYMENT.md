@@ -6,13 +6,14 @@
 
 Add these on Render Dashboard → Your Service → Environment:
 
-**For RapidAPI:**
+**For RapidAPI (Recommended):**
 ```
 RAPIDAPI_KEY = your-rapidapi-key
-RAPIDAPI_HOST = https://microsoft-translator-text.p.rapidapi.com
+RAPIDAPI_HOST = microsoft-translator-text.p.rapidapi.com
 ```
+*(Get key from https://rapidapi.com - subscribe to Microsoft Translator Text API)*
 
-**For Azure Translator (alternative):**
+**For Azure Translator (Alternative):**
 ```
 AZURE_TRANSLATOR_KEY = your-azure-key
 AZURE_TRANSLATOR_ENDPOINT = https://api.cognitive.microsofttranslator.com/
