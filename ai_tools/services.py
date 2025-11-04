@@ -139,6 +139,29 @@ def translate_text(text, target_language='en'):
                             'target_language': target_language
                         }
                     
+                    # If 502 (Bad Gateway), API provider is down
+                    if response.status_code == 502:
+                        logger.error("❌ 502 Bad Gateway - RapidAPI service is down")
+                        try:
+                            error_body = response.json()
+                            error_msg = error_body.get('messages', error_body.get('message', 'RapidAPI service is unavailable'))
+                            logger.error(f"❌ Error response: {error_msg}")
+                        except:
+                            try:
+                                error_msg = response.text[:200]
+                            except:
+                                error_msg = 'RapidAPI service is currently unavailable'
+                        
+                        # Don't try other endpoints if it's a 502 - the service is down
+                        return {
+                            'error': f'RapidAPI service is currently unavailable (502 Bad Gateway). The Microsoft Translator API provider is not responding. Please try again later or use Azure Translator API instead.',
+                            'details': error_msg,
+                            'translated_text': None,
+                            'source_language': None,
+                            'target_language': target_language,
+                            'suggestion': 'Set up Azure Translator API as an alternative, or wait for RapidAPI to restore service.'
+                        }
+                    
                     # If successful, parse and return
                     if response.status_code == 200:
                         response.raise_for_status()
