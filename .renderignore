@@ -1,0 +1,51 @@
+# Render ignore file - exclude from deployment
+
+# Git
+.git
+.gitignore
+
+# IDE
+.vscode
+.idea
+*.iml
+
+# Local environment
+.env.local
+.env.development
+
+# Node modules (will be installed during build)
+node_modules
+frontend/node_modules
+
+# Build artifacts (will be generated)
+frontend/dist
+frontend/build
+backend/*/target
+*.class
+
+# Logs
+*.log
+logs
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose.yml
+Dockerfile
+.dockerignore
+
+# Documentation (optional)
+*.md
+!README.md
+
+# Tests
+backend/*/src/test
+frontend/src/**/*.test.js
+frontend/src/**/*.test.jsx
+
+# Local database files
+*.db
+*.sqlite
+*.sqlite3

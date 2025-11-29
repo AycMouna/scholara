@@ -1,0 +1,27 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: auth-service
+  datasource:
+    url: jdbc:mysql://localhost:3306/scholara_auth?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: ""
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+    show-sql: true
+
+jwt:
+  secret: bXVsdGlDbG91ZFNlY3JldEtleU1vcmVCYXNlNjQxMjM0NTY3OA==
+  expiration-minutes: 60
+  refresh-expiration-days: 7
+
+google:
+  client-id: 763222237672-p7a5r26ck93v8a4jkmd0eb8uf61lvkko.apps.googleusercontent.com
+

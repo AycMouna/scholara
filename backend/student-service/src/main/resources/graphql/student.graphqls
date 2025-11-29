@@ -1,0 +1,49 @@
+scalar Long
+
+type Student {
+    id: ID!
+    firstName: String!
+    lastName: String!
+    email: String!
+    universityId: Long!
+    university: University
+    courses: [Course!]!
+    createdAt: String!
+    updatedAt: String!
+}
+
+type University {
+    id: ID!
+    name: String!
+    location: String!
+    students: [Student!]!
+}
+
+type Course {
+    id: ID!
+    name: String!
+    instructor: String!
+    category: String!
+    schedule: String!
+}
+
+type Query {
+    students: [Student!]!
+    student(id: ID!): Student
+    studentsByUniversity(universityId: Long!): [Student!]!
+    searchStudents(searchTerm: String!): [Student!]!
+    studentsByFilters(universityId: Long, searchTerm: String): [Student!]!
+}
+
+type Mutation {
+    createStudent(input: StudentInput!): Student!
+    updateStudent(id: ID!, input: StudentInput!): Student!
+    deleteStudent(id: ID!): Boolean!
+}
+
+input StudentInput {
+    firstName: String!
+    lastName: String!
+    email: String!
+    universityId: Long!
+}

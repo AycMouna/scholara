@@ -1,0 +1,193 @@
+# Render Blueprint for Scholara Microservices Platform
+# This file deploys all services on Render.com
+
+databases:
+  - name: scholara-mysql
+    databaseName: scholara_students
+    user: scholara
+    plan: free
+    
+  - name: scholara-postgres
+    databaseName: scholara_courses
+    user: postgres
+    plan: free
+
+services:
+  # Auth Service (Spring Boot)
+  - type: web
+    name: scholara-auth-service
+    env: java
+    region: oregon
+    plan: free
+    buildCommand: cd backend/auth-service && mvn clean package -DskipTests
+    startCommand: java -jar backend/auth-service/target/auth-service-1.0.0.jar
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: SPRING_DATASOURCE_URL
+        fromDatabase:
+          name: scholara-mysql
+          property: connectionString
+      - key: SPRING_DATASOURCE_USERNAME
+        fromDatabase:
+          name: scholara-mysql
+          property: user
+      - key: SPRING_DATASOURCE_PASSWORD
+        fromDatabase:
+          name: scholara-mysql
+          property: password
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRATION
+        value: "86400000"
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+    healthCheckPath: /actuator/health
+
+  # Student Service (Spring Boot with GraphQL)
+  - type: web
+    name: scholara-student-service
+    env: java
+    region: oregon
+    plan: free
+    buildCommand: cd backend/student-service && mvn clean package -DskipTests
+    startCommand: java -jar backend/student-service/target/student-service-0.0.1-SNAPSHOT.jar
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: SPRING_DATASOURCE_URL
+        fromDatabase:
+          name: scholara-mysql
+          property: connectionString
+      - key: SPRING_DATASOURCE_USERNAME
+        fromDatabase:
+          name: scholara-mysql
+          property: user
+      - key: SPRING_DATASOURCE_PASSWORD
+        fromDatabase:
+          name: scholara-mysql
+          property: password
+    healthCheckPath: /actuator/health
+
+  # Course Service (Django + PostgreSQL)
+  - type: web
+    name: scholara-course-service
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: cd backend/course-service && pip install -r requirements.txt && python manage.py migrate
+    startCommand: cd backend/course-service && gunicorn course_service.wsgi:application --bind 0.0.0.0:$PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.0"
+      - key: DEBUG
+        value: "False"
+      - key: DB_NAME
+        fromDatabase:
+          name: scholara-postgres
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: scholara-postgres
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: scholara-postgres
+          property: password
+      - key: DB_HOST
+        fromDatabase:
+          name: scholara-postgres
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: scholara-postgres
+          property: port
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALLOWED_HOSTS
+        value: "*"
+    healthCheckPath: /api/courses/health
+
+  # AI Service (Django + ML Models)
+  - type: web
+    name: scholara-ai-service
+    env: python
+    region: oregon
+    plan: standard  # AI service needs more resources for ML models
+    buildCommand: cd backend/ai-service && pip install -r requirements.txt
+    startCommand: cd backend/ai-service && gunicorn ai_service.wsgi:application --bind 0.0.0.0:$PORT --timeout 120
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.0"
+      - key: DEBUG
+        value: "False"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALLOWED_HOSTS
+        value: "*"
+      - key: OPENAI_API_KEY
+        sync: false
+    healthCheckPath: /api/ai/health
+
+  # API Gateway (Spring Cloud Gateway)
+  - type: web
+    name: scholara-api-gateway
+    env: java
+    region: oregon
+    plan: free
+    buildCommand: cd backend/api-gateway && mvn clean package -DskipTests
+    startCommand: java -jar backend/api-gateway/target/api-gateway-*.jar
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: AUTH_SERVICE_URL
+        fromService:
+          name: scholara-auth-service
+          type: web
+          property: host
+      - key: STUDENT_SERVICE_URL
+        fromService:
+          name: scholara-student-service
+          type: web
+          property: host
+      - key: COURSE_SERVICE_URL
+        fromService:
+          name: scholara-course-service
+          type: web
+          property: host
+      - key: AI_SERVICE_URL
+        fromService:
+          name: scholara-ai-service
+          type: web
+          property: host
+    healthCheckPath: /actuator/health
+
+  # Frontend (React + Vite)
+  - type: web
+    name: scholara-frontend
+    env: static
+    region: oregon
+    plan: free
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: frontend/dist
+    envVars:
+      - key: NODE_VERSION
+        value: "18.17.0"
+      - key: VITE_API_GATEWAY_URL
+        fromService:
+          name: scholara-api-gateway
+          type: web
+          property: host
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
