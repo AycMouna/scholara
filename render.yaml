@@ -2,39 +2,36 @@
 # This file deploys all services on Render.com
 
 databases:
-  - name: scholara-mysql
-    databaseName: scholara_students
-    user: scholara
+  - name: scholara-auth-students-db
+    databaseName: scholara_auth
     plan: free
     
-  - name: scholara-postgres
+  - name: scholara-courses-db
     databaseName: scholara_courses
-    user: postgres
     plan: free
 
 services:
   # Auth Service (Spring Boot)
   - type: web
     name: scholara-auth-service
-    env: java
-    region: oregon
+    runtime: docker
     plan: free
-    buildCommand: cd backend/auth-service && mvn clean package -DskipTests
-    startCommand: java -jar backend/auth-service/target/auth-service-1.0.0.jar
+    dockerfilePath: backend/auth-service/Dockerfile
+    dockerContext: backend/auth-service
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
       - key: SPRING_DATASOURCE_URL
         fromDatabase:
-          name: scholara-mysql
+          name: scholara-auth-students-db
           property: connectionString
       - key: SPRING_DATASOURCE_USERNAME
         fromDatabase:
-          name: scholara-mysql
+          name: scholara-auth-students-db
           property: user
       - key: SPRING_DATASOURCE_PASSWORD
         fromDatabase:
-          name: scholara-mysql
+          name: scholara-auth-students-db
           property: password
       - key: JWT_SECRET
         generateValue: true
@@ -49,36 +46,34 @@ services:
   # Student Service (Spring Boot with GraphQL)
   - type: web
     name: scholara-student-service
-    env: java
-    region: oregon
+    runtime: docker
     plan: free
-    buildCommand: cd backend/student-service && mvn clean package -DskipTests
-    startCommand: java -jar backend/student-service/target/student-service-0.0.1-SNAPSHOT.jar
+    dockerfilePath: backend/student-service/Dockerfile
+    dockerContext: backend/student-service
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
       - key: SPRING_DATASOURCE_URL
         fromDatabase:
-          name: scholara-mysql
+          name: scholara-auth-students-db
           property: connectionString
       - key: SPRING_DATASOURCE_USERNAME
         fromDatabase:
-          name: scholara-mysql
+          name: scholara-auth-students-db
           property: user
       - key: SPRING_DATASOURCE_PASSWORD
         fromDatabase:
-          name: scholara-mysql
+          name: scholara-auth-students-db
           property: password
     healthCheckPath: /actuator/health
 
   # Course Service (Django + PostgreSQL)
   - type: web
     name: scholara-course-service
-    env: python
-    region: oregon
+    runtime: docker
     plan: free
-    buildCommand: cd backend/course-service && pip install -r requirements.txt && python manage.py migrate
-    startCommand: cd backend/course-service && gunicorn course_service.wsgi:application --bind 0.0.0.0:$PORT
+    dockerfilePath: backend/course-service/Dockerfile
+    dockerContext: backend/course-service
     envVars:
       - key: PYTHON_VERSION
         value: "3.11.0"
@@ -86,23 +81,23 @@ services:
         value: "False"
       - key: DB_NAME
         fromDatabase:
-          name: scholara-postgres
+          name: scholara-courses-db
           property: database
       - key: DB_USER
         fromDatabase:
-          name: scholara-postgres
+          name: scholara-courses-db
           property: user
       - key: DB_PASSWORD
         fromDatabase:
-          name: scholara-postgres
+          name: scholara-courses-db
           property: password
       - key: DB_HOST
         fromDatabase:
-          name: scholara-postgres
+          name: scholara-courses-db
           property: host
       - key: DB_PORT
         fromDatabase:
-          name: scholara-postgres
+          name: scholara-courses-db
           property: port
       - key: SECRET_KEY
         generateValue: true
@@ -113,11 +108,10 @@ services:
   # AI Service (Django + ML Models)
   - type: web
     name: scholara-ai-service
-    env: python
-    region: oregon
+    runtime: docker
     plan: standard  # AI service needs more resources for ML models
-    buildCommand: cd backend/ai-service && pip install -r requirements.txt
-    startCommand: cd backend/ai-service && gunicorn ai_service.wsgi:application --bind 0.0.0.0:$PORT --timeout 120
+    dockerfilePath: backend/ai-service/Dockerfile
+    dockerContext: backend/ai-service
     envVars:
       - key: PYTHON_VERSION
         value: "3.11.0"
@@ -134,11 +128,10 @@ services:
   # API Gateway (Spring Cloud Gateway)
   - type: web
     name: scholara-api-gateway
-    env: java
-    region: oregon
+    runtime: docker
     plan: free
-    buildCommand: cd backend/api-gateway && mvn clean package -DskipTests
-    startCommand: java -jar backend/api-gateway/target/api-gateway-*.jar
+    dockerfilePath: backend/api-gateway/Dockerfile
+    dockerContext: backend/api-gateway
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
@@ -167,8 +160,7 @@ services:
   # Frontend (React + Vite)
   - type: web
     name: scholara-frontend
-    env: static
-    region: oregon
+    runtime: static
     plan: free
     buildCommand: cd frontend && npm install && npm run build
     staticPublishPath: frontend/dist
