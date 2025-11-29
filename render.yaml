@@ -4,7 +4,7 @@
 databases:
   - name: scholara-shared-db
     databaseName: scholara_db
-    plan: free
+    plan: starter
 
 services:
   # Auth Service (Spring Boot)
