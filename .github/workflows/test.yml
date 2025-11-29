@@ -1,0 +1,60 @@
+name: Test Application
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-backend:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Install Python dependencies for Course Service
+      run: |
+        cd backend/course-service
+        pip install -r requirements.txt
+        
+    - name: Install Python dependencies for AI Service
+      run: |
+        cd backend/ai-service
+        pip install -r requirements.txt
+        
+    - name: Run Course Service checks
+      run: |
+        cd backend/course-service
+        python manage.py check
+        
+    - name: Run AI Service checks
+      run: |
+        cd backend/ai-service
+        python manage.py check
+        
+  test-frontend:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - name: Install frontend dependencies
+      run: |
+        cd frontend
+        npm install
+        
+    - name: Run frontend build test
+      run: |
+        cd frontend
+        npm run build --if-present

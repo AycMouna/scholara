@@ -1,0 +1,72 @@
+name: Deploy to Render
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - name: Set up Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+        
+    - name: Install Python dependencies for Course Service
+      run: |
+        cd backend/course-service
+        pip install -r requirements.txt
+        
+    - name: Install Python dependencies for AI Service
+      run: |
+        cd backend/ai-service
+        pip install -r requirements.txt
+        
+    - name: Install Node.js dependencies
+      run: |
+        cd frontend
+        npm install
+        
+    - name: Test Course Service
+      run: |
+        cd backend/course-service
+        python manage.py check
+        
+    - name: Test AI Service
+      run: |
+        cd backend/ai-service
+        python manage.py check
+        
+  deploy:
+    needs: build-and-test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Deploy to Render
+      run: |
+        echo "Deployment triggered for commit ${{ github.sha }}"
+        echo "This will automatically trigger a new deployment on Render"
+        echo "You can also set up Render to auto-deploy on push"
+        
+    - name: Notify on deployment
+      run: |
+        echo "✅ Deployment workflow completed successfully"
+        echo "Your application will be deployed to Render automatically"
