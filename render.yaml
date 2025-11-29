@@ -109,7 +109,7 @@ services:
   - type: web
     name: scholara-ai-service
     runtime: docker
-    plan: standard  # AI service needs more resources for ML models
+    plan: free  # Using free tier - may have limitations for ML models
     dockerfilePath: backend/ai-service/Dockerfile
     dockerContext: backend/ai-service
     envVars:
