@@ -1,6 +1,11 @@
 # Render Blueprint for Scholara Microservices Platform
 # This file deploys all services on Render.com
 
+databases:
+  - name: scholara-db
+    databaseName: scholara_db
+    plan: free
+
 services:
   # Auth Service (Spring Boot)
   - type: web
@@ -14,15 +19,15 @@ services:
         value: prod
       - key: SPRING_DATASOURCE_URL
         fromDatabase:
-          name: scholara-shared-db
+          name: scholara-db
           property: connectionString
       - key: SPRING_DATASOURCE_USERNAME
         fromDatabase:
-          name: scholara-shared-db
+          name: scholara-db
           property: user
       - key: SPRING_DATASOURCE_PASSWORD
         fromDatabase:
-          name: scholara-shared-db
+          name: scholara-db
           property: password
       - key: JWT_SECRET
         generateValue: true
@@ -46,15 +51,15 @@ services:
         value: prod
       - key: SPRING_DATASOURCE_URL
         fromDatabase:
-          name: scholara-shared-db
+          name: scholara-db
           property: connectionString
       - key: SPRING_DATASOURCE_USERNAME
         fromDatabase:
-          name: scholara-shared-db
+          name: scholara-db
           property: user
       - key: SPRING_DATASOURCE_PASSWORD
         fromDatabase:
-          name: scholara-shared-db
+          name: scholara-db
           property: password
     healthCheckPath: /actuator/health
 
@@ -72,15 +77,15 @@ services:
         value: "False"
       - key: SPRING_DATASOURCE_URL
         fromDatabase:
-          name: scholara-shared-db
+          name: scholara-db
           property: connectionString
       - key: SPRING_DATASOURCE_USERNAME
         fromDatabase:
-          name: scholara-shared-db
+          name: scholara-db
           property: user
       - key: SPRING_DATASOURCE_PASSWORD
         fromDatabase:
-          name: scholara-shared-db
+          name: scholara-db
           property: password
       - key: SECRET_KEY
         generateValue: true
