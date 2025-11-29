@@ -2,12 +2,8 @@
 # This file deploys all services on Render.com
 
 databases:
-  - name: scholara-auth-students-db
-    databaseName: scholara_auth
-    plan: free
-    
-  - name: scholara-courses-db
-    databaseName: scholara_courses
+  - name: scholara-shared-db
+    databaseName: scholara_db
     plan: free
 
 services:
@@ -23,15 +19,15 @@ services:
         value: prod
       - key: SPRING_DATASOURCE_URL
         fromDatabase:
-          name: scholara-auth-students-db
+          name: scholara-shared-db
           property: connectionString
       - key: SPRING_DATASOURCE_USERNAME
         fromDatabase:
-          name: scholara-auth-students-db
+          name: scholara-shared-db
           property: user
       - key: SPRING_DATASOURCE_PASSWORD
         fromDatabase:
-          name: scholara-auth-students-db
+          name: scholara-shared-db
           property: password
       - key: JWT_SECRET
         generateValue: true
@@ -55,15 +51,15 @@ services:
         value: prod
       - key: SPRING_DATASOURCE_URL
         fromDatabase:
-          name: scholara-auth-students-db
+          name: scholara-shared-db
           property: connectionString
       - key: SPRING_DATASOURCE_USERNAME
         fromDatabase:
-          name: scholara-auth-students-db
+          name: scholara-shared-db
           property: user
       - key: SPRING_DATASOURCE_PASSWORD
         fromDatabase:
-          name: scholara-auth-students-db
+          name: scholara-shared-db
           property: password
     healthCheckPath: /actuator/health
 
@@ -81,23 +77,23 @@ services:
         value: "False"
       - key: DB_NAME
         fromDatabase:
-          name: scholara-courses-db
+          name: scholara-shared-db
           property: database
       - key: DB_USER
         fromDatabase:
-          name: scholara-courses-db
+          name: scholara-shared-db
           property: user
       - key: DB_PASSWORD
         fromDatabase:
-          name: scholara-courses-db
+          name: scholara-shared-db
           property: password
       - key: DB_HOST
         fromDatabase:
-          name: scholara-courses-db
+          name: scholara-shared-db
           property: host
       - key: DB_PORT
         fromDatabase:
-          name: scholara-courses-db
+          name: scholara-shared-db
           property: port
       - key: SECRET_KEY
         generateValue: true
