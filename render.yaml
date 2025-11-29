@@ -1,11 +1,6 @@
 # Render Blueprint for Scholara Microservices Platform
 # This file deploys all services on Render.com
 
-databases:
-  - name: scholara-shared-db
-    databaseName: scholara_db
-    plan: free
-
 services:
   # Auth Service (Spring Boot)
   - type: web
