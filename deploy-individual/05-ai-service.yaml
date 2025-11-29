@@ -1,0 +1,23 @@
+# Render Blueprint for Scholara AI Service Only
+# This file deploys only the AI Service
+
+services:
+  # AI Service (Django + ML Models)
+  - type: web
+    name: scholara-ai-service
+    runtime: docker
+    plan: free  # Using free tier - may have limitations for ML models
+    dockerfilePath: ../backend/ai-service/Dockerfile
+    dockerContext: ../backend/ai-service
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.0"
+      - key: DEBUG
+        value: "False"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALLOWED_HOSTS
+        value: "*"
+      - key: OPENAI_API_KEY
+        sync: false
+    healthCheckPath: /api/ai/health
