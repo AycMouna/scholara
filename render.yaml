@@ -75,26 +75,18 @@ services:
         value: "3.11.0"
       - key: DEBUG
         value: "False"
-      - key: DB_NAME
+      - key: SPRING_DATASOURCE_URL
         fromDatabase:
           name: scholara-shared-db
-          property: database
-      - key: DB_USER
+          property: connectionString
+      - key: SPRING_DATASOURCE_USERNAME
         fromDatabase:
           name: scholara-shared-db
           property: user
-      - key: DB_PASSWORD
+      - key: SPRING_DATASOURCE_PASSWORD
         fromDatabase:
           name: scholara-shared-db
           property: password
-      - key: DB_HOST
-        fromDatabase:
-          name: scholara-shared-db
-          property: host
-      - key: DB_PORT
-        fromDatabase:
-          name: scholara-shared-db
-          property: port
       - key: SECRET_KEY
         generateValue: true
       - key: ALLOWED_HOSTS

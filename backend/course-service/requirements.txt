@@ -9,3 +9,4 @@ celery==5.3.4
 redis==5.0.1
 graphene-django==3.1.5
 django-graphql-jwt==0.3.4
+dj-database-url==2.1.0
