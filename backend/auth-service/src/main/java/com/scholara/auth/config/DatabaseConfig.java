@@ -26,11 +26,16 @@ public class DatabaseConfig {
 
         // Handle Render's postgresql:// format
         if (url != null) {
-            if (url.startsWith("postgresql://")) {
-                url = url.replace("postgresql://", "jdbc:postgresql://");
-            } else if (!url.startsWith("jdbc:postgresql://")) {
-                // If it's not in the correct format, try to parse it
-                url = convertToJdbcUrl(url);
+            // Parse the Render URL to extract components
+            DatabaseConnectionInfo connectionInfo = parseRenderUrl(url);
+            url = connectionInfo.url;
+            
+            // Use parsed username/password if not provided separately
+            if (username == null && connectionInfo.username != null) {
+                username = connectionInfo.username;
+            }
+            if (password == null && connectionInfo.password != null) {
+                password = connectionInfo.password;
             }
         } else {
             url = "jdbc:postgresql://localhost:5432/scholara_auth";
@@ -52,13 +57,56 @@ public class DatabaseConfig {
                 .build();
     }
 
-    private String convertToJdbcUrl(String renderUrl) {
-        // Handle various Render URL formats
-        if (renderUrl.contains("@")) {
-            // Format: postgresql://user:pass@host:port/dbname
-            String jdbcUrl = "jdbc:postgresql://" + renderUrl.substring(renderUrl.indexOf("@") + 1);
-            return jdbcUrl;
+    private DatabaseConnectionInfo parseRenderUrl(String renderUrl) {
+        String jdbcUrl = "jdbc:postgresql://localhost:5432/scholara_auth";
+        String username = null;
+        String password = null;
+        
+        try {
+            if (renderUrl.startsWith("postgresql://")) {
+                // Remove the postgresql:// prefix
+                String withoutPrefix = renderUrl.substring(13); // length of "postgresql://"
+                
+                if (withoutPrefix.contains("@")) {
+                    // Format: user:pass@host:port/dbname
+                    String[] parts = withoutPrefix.split("@", 2);
+                    String userPass = parts[0];
+                    String hostPortDb = parts[1];
+                    
+                    // Extract username and password
+                    if (userPass.contains(":")) {
+                        String[] userPassParts = userPass.split(":", 2);
+                        username = userPassParts[0];
+                        password = userPassParts[1];
+                    }
+                    
+                    // Construct JDBC URL
+                    jdbcUrl = "jdbc:postgresql://" + hostPortDb;
+                } else {
+                    // Format: host:port/dbname
+                    jdbcUrl = "jdbc:postgresql://" + withoutPrefix;
+                }
+            } else if (renderUrl.startsWith("jdbc:postgresql://")) {
+                // Already in correct format
+                jdbcUrl = renderUrl;
+            }
+        } catch (Exception e) {
+            // Fallback to default if parsing fails
+            jdbcUrl = "jdbc:postgresql://localhost:5432/scholara_auth";
         }
-        return "jdbc:postgresql://localhost:5432/scholara_auth";
+        
+        return new DatabaseConnectionInfo(jdbcUrl, username, password);
+    }
+    
+    private static class DatabaseConnectionInfo {
+        final String url;
+        final String username;
+        final String password;
+        
+        DatabaseConnectionInfo(String url, String username, String password) {
+            this.url = url;
+            this.username = username;
+            this.password = password;
+        }
     }
 }
