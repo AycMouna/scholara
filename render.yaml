@@ -6,7 +6,7 @@ services:
   - type: web
     name: scholara-ai-service
     runtime: docker
-    plan: free  # Using free tier - may have limitations for ML models
+    plan: starter  # Using starter tier for ML models - needs more memory than free tier
     dockerfilePath: backend/ai-service/Dockerfile
     dockerContext: backend/ai-service
     envVars:
