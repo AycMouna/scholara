@@ -11,10 +11,13 @@ RUN npm install
 # Copier le code source
 COPY . .
 
+# Construire l'application
+RUN npm run build
+
 # Exposer le port
 EXPOSE 3000
 
 # Commande de démarrage
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+CMD ["npm", "run", "preview", "--", "--host", "0.0.0.0"]
 
 
