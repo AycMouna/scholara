@@ -16,6 +16,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
+# Pre-download AI models to cache them in the image
+RUN python download_models.py
+
 # Expose port
 EXPOSE 8083
 
