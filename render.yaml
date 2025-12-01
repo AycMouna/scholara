@@ -1,23 +1,17 @@
-# Render Blueprint for Scholara AI Service Only
-# This file deploys only the AI Service
+# Render Blueprint for Scholara API Gateway Only
+# This file deploys only the API Gateway
 
 services:
-  # AI Service (Django + ML Models)
+  # API Gateway (Spring Cloud Gateway)
   - type: web
-    name: scholara-ai-service
+    name: scholara-api-gateway
     runtime: docker
-    plan: starter  # Using starter tier for ML models - needs more memory than free tier
-    dockerfilePath: backend/ai-service/Dockerfile
-    dockerContext: backend/ai-service
+    plan: free
+    dockerfilePath: backend/api-gateway/Dockerfile
+    dockerContext: backend/api-gateway
     envVars:
-      - key: PYTHON_VERSION
-        value: "3.11.0"
-      - key: DEBUG
-        value: "False"
-      - key: SECRET_KEY
-        generateValue: true
-      - key: ALLOWED_HOSTS
-        value: "*"
-      - key: OPENAI_API_KEY
-        sync: false
-    healthCheckPath: /api/ai/health
+      - key: SERVER_PORT
+        value: "8080"
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+    healthCheckPath: /actuator/health
