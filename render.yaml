@@ -15,3 +15,4 @@ services:
       - key: VITE_API_BASE_URL
         value: "https://scholara-api-gateway.onrender.com/api"
     healthCheckPath: /
+    port: 8080
