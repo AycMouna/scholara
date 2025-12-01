@@ -9,12 +9,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AddField(
-            model_name='enrollment',
-            name='enrolled_at',
-            field=models.DateTimeField(default=django.utils.timezone.now),
-            preserve_default=False,
-        ),
+        # Field already exists in 0001_initial, no operation needed
     ]
 
 
