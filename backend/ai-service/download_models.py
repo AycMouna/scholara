@@ -42,7 +42,7 @@ def download_translation_models():
 
 def download_summarization_model():
     """Download the summarization model."""
-    model_name = "sshleifer/distilbart-cnn-12-6"
+    model_name = os.getenv('AI_SUMMARIZATION_MODEL') or "facebook/bart-large-xsum"
     try:
         logger.info(f"Downloading summarization model: {model_name}")
         # Download tokenizer
@@ -53,7 +53,7 @@ def download_summarization_model():
     except Exception as e:
         logger.warning(f"Failed to download {model_name}: {e}")
         # Try fallback model
-        fallback_model = "facebook/bart-large-cnn"
+        fallback_model = "sshleifer/distilbart-cnn-12-6"
         try:
             logger.info(f"Downloading fallback summarization model: {fallback_model}")
             tokenizer = AutoTokenizer.from_pretrained(fallback_model)
