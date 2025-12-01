@@ -122,3 +122,9 @@ class CourseViewSet(viewsets.ModelViewSet):
         })
 
 
+    @action(detail=False, methods=['get'], permission_classes=[])
+    def health(self, request):
+        """Health check endpoint"""
+        return Response({'status': 'healthy'}, status=status.HTTP_200_OK)
+
+
