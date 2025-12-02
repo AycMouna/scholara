@@ -1,10 +1,5 @@
 # Render Blueprint for Scholara Auth Service Only
-# This file deploys only the Auth Service with database
-
-databases:
-  - name: scholara-db
-    databaseName: scholara_db
-    plan: free
+# This file deploys only the Auth Service
 
 services:
   # Auth Service (Spring Boot)
