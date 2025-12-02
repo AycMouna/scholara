@@ -1,17 +1,25 @@
-# Render Blueprint for Scholara Course Service Only
-# This file deploys only the Course Service
+# Render Blueprint for Scholara API Gateway Only
+# This file deploys only the API Gateway
 
 services:
-  # Course Service (Django)
+  # API Gateway (Spring Cloud Gateway)
   - type: web
-    name: scholara-course-service
+    name: scholara-api-gateway
     runtime: docker
     plan: free
-    dockerfilePath: backend/course-service/Dockerfile
-    dockerContext: backend/course-service
+    dockerfilePath: backend/api-gateway/Dockerfile
+    dockerContext: backend/api-gateway
     envVars:
-      - key: DATABASE_URL
-        fromDatabase:
-          name: scholara-db
-          property: connectionString
-    healthCheckPath: /api/health/
+      - key: JAVA_OPTS
+        value: "-Xmx512m -Xms256m"
+      - key: SERVER_PORT
+        value: "8084"
+      # Service URLs - these will need to be updated with actual Render service URLs
+      - key: STUDENT_SERVICE_URL
+        value: "http://scholara-student-service.onrender.com"
+      - key: COURSE_SERVICE_URL
+        value: "http://scholara-course-service.onrender.com"
+      - key: AUTH_SERVICE_URL
+        value: "http://scholara-auth-service.onrender.com"
+    healthCheckPath: /actuator/health
+    port: "8084"
