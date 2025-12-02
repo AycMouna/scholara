@@ -1,7 +1,7 @@
 import { getAuthHeaders } from './authService';
 
 // API Gateway URL - Single entry point for all services
-const API_GATEWAY_URL = 'http://localhost:8084';
+const API_GATEWAY_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8084';
 
 const fetchWithAuth = (url, options = {}) => {
   const headers = {

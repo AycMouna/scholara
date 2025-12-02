@@ -1,4 +1,4 @@
-const API_GATEWAY_URL = 'http://localhost:8084';
+const API_GATEWAY_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8084';
 const AUTH_BASE_URL = `${API_GATEWAY_URL}/api/auth`;
 
 const parseResponse = async (response) => {

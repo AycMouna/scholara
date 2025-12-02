@@ -1,7 +1,7 @@
 import { getAuthHeaders } from './authService';
 
 // GraphQL endpoint via API Gateway
-const GRAPHQL_ENDPOINT = 'http://localhost:8084/graphql';
+const GRAPHQL_ENDPOINT = import.meta.env.VITE_GRAPHQL_URL || 'http://localhost:8084/graphql';
 
 // Generic GraphQL fetch function
 const fetchGraphQL = async (query, variables = {}) => {
