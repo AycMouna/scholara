@@ -18,4 +18,3 @@ services:
       - key: COURSE_SERVICE_URL
         value: "http://scholara-course-service.onrender.com"
     healthCheckPath: /actuator/health
-    port: "8086"
