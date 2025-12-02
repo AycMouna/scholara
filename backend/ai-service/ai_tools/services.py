@@ -91,8 +91,14 @@ def _get_translation_pipeline(source_lang='en', target_lang='fr'):
             if override_model:
                 model_name = override_model
             else:
-                # Use Helsinki-NLP models - lightweight and fast
-                model_name = f"Helsinki-NLP/opus-mt-{source_lang}-{target_lang}"
+                # Use smaller t5-small model by default for memory efficiency
+                if source_lang == 'en' and target_lang == 'fr':
+                    model_name = "t5-small"
+                elif source_lang == 'fr' and target_lang == 'en':
+                    model_name = "t5-small"
+                else:
+                    # Use Helsinki-NLP models - lightweight and fast
+                    model_name = f"Helsinki-NLP/opus-mt-{source_lang}-{target_lang}"
             
             # Fallback model for common languages (avoid large mbart model)
             if source_lang == 'auto' and not override_model:

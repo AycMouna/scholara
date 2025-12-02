@@ -14,19 +14,9 @@ logger = logging.getLogger(__name__)
 def download_translation_models():
     """Download commonly used translation models."""
     models_to_download = [
+        "t5-small",  # Much smaller than Helsinki-NLP models
         "Helsinki-NLP/opus-mt-en-fr",
-        "Helsinki-NLP/opus-mt-fr-en",
-        "Helsinki-NLP/opus-mt-en-es",
-        "Helsinki-NLP/opus-mt-es-en",
-        "Helsinki-NLP/opus-mt-en-ar",
-        "Helsinki-NLP/opus-mt-ar-en",
-        "Helsinki-NLP/opus-mt-en-de",
-        "Helsinki-NLP/opus-mt-de-en",
-        "Helsinki-NLP/opus-mt-en-it",
-        "Helsinki-NLP/opus-mt-it-en",
-        "Helsinki-NLP/opus-mt-en-pt",
-        "Helsinki-NLP/opus-mt-pt-en",
-        "Helsinki-NLP/opus-mt-mul-en"  # Multilingual model for other languages
+        "Helsinki-NLP/opus-mt-fr-en"
     ]
     
     for model_name in models_to_download:
@@ -52,8 +42,8 @@ def download_summarization_model():
         logger.info(f"✅ Successfully downloaded: {model_name}")
     except Exception as e:
         logger.warning(f"Failed to download {model_name}: {e}")
-        # Try fallback model
-        fallback_model = "sshleifer/distilbart-cnn-12-6"
+        # Try fallback model - use a much smaller model
+        fallback_model = "sshleifer/distilbart-cnn-12-6"  # This is actually smaller than bart-large-xsum
         try:
             logger.info(f"Downloading fallback summarization model: {fallback_model}")
             tokenizer = AutoTokenizer.from_pretrained(fallback_model)

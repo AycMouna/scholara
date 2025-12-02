@@ -1,18 +1,28 @@
-# Render Blueprint for Scholara Frontend Only
-# This file deploys only the Frontend
+# Render Blueprint for Scholara AI Service Only
+# This file deploys only the AI Service
 
 services:
-  # Frontend (React + Vite)
+  # AI Service (Django + ML Models)
   - type: web
-    name: scholara-frontend
+    name: scholara-ai-service
     runtime: docker
-    plan: free
-    dockerfilePath: frontend/Dockerfile
-    dockerContext: frontend
+    plan: starter
+    dockerfilePath: backend/ai-service/Dockerfile
+    dockerContext: backend/ai-service
     envVars:
-      - key: NODE_VERSION
-        value: "21.0.0"
-      - key: VITE_API_BASE_URL
-        value: "https://scholara-api-gateway.onrender.com/api"
-    healthCheckPath: /
-    port: 8080
+      - key: PYTHON_VERSION
+        value: "3.11.0"
+      - key: DEBUG
+        value: "False"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALLOWED_HOSTS
+        value: "*"
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: AI_SUMMARIZATION_MODEL
+        value: "facebook/bart-large-xsum"
+      - key: AI_TRANSLATION_MODEL
+        value: "t5-small"
+    healthCheckPath: /api/ai/health
+    port: 8083

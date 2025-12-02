@@ -1,13 +1,14 @@
 # AI Service Dockerfile
-FROM python:3.11-slim
+FROM python:3.11-alpine
 
 WORKDIR /app
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y \
+RUN apk add --no-cache \
     gcc \
     g++ \
-    && rm -rf /var/lib/apt/lists/*
+    musl-dev \
+    linux-headers
 
 # Copy requirements and install Python dependencies
 COPY requirements.txt .
@@ -23,4 +24,4 @@ RUN python download_models.py
 EXPOSE 8083
 
 # Run server with increased timeout for AI models
-CMD gunicorn ai_service.wsgi:application --bind 0.0.0.0:8083 --workers 1 --timeout 120
+CMD gunicorn ai_service.wsgi:application --bind 0.0.0.0:8083 --workers 1 --timeout 120 --preload
