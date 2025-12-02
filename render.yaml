@@ -1,15 +1,10 @@
 # Render Blueprint for PostgreSQL Database Only
 # Deploy database first, then services one by one
 
-services:
-  # PostgreSQL Database
-  - type: pserv
-    name: scholara-postgres
+databases:
+  - name: scholara-postgres
     plan: starter
-    envVars:
-      - key: POSTGRES_DB
-        value: scholara_db
-      - key: POSTGRES_USER
-        value: postgres
-      - key: POSTGRES_PASSWORD
-        value: postgres
+    ipAllowList: []
+    databaseName: scholara_db
+    user: postgres
+    postgresMajorVersion: 15
