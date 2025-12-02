@@ -1,32 +1,18 @@
-# Render Blueprint for Scholara API Gateway Only
-# This file deploys only the API Gateway
+# Render Blueprint for Scholara Frontend Only
+# This file deploys only the Frontend Service
 
 services:
-  # API Gateway (Spring Cloud Gateway)
+  # Frontend (React with Vite)
   - type: web
-    name: scholara-api-gateway
-    runtime: docker
+    name: scholara-frontend
+    runtime: node
     plan: free
-    dockerfilePath: backend/api-gateway/Dockerfile
-    dockerContext: backend/api-gateway
+    buildCommand: npm run build
+    startCommand: npm run preview
     envVars:
-      - key: SERVER_PORT
-        value: "8080"
-      - key: SPRING_PROFILES_ACTIVE
-        value: prod
-      - key: STUDENT_SERVICE_URL
-        fromService:
-          type: web
-          name: scholara-student-service
-          property: hostport
-      - key: COURSE_SERVICE_URL
-        fromService:
-          type: web
-          name: scholara-course-service
-          property: hostport
-      - key: AUTH_SERVICE_URL
-        fromService:
-          type: web
-          name: scholara-auth-service
-          property: hostport
-    healthCheckPath: /actuator/health
+      - key: NODE_VERSION
+        value: 18
+      - key: VITE_API_BASE_URL
+        value: https://scholara-api-gateway.onrender.com
+    staticPublishPath: dist
+    healthCheckPath: /
