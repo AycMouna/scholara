@@ -1,14 +1,13 @@
 # AI Service Dockerfile
-FROM python:3.11-alpine
+FROM python:3.11-slim
 
 WORKDIR /app
 
 # Install system dependencies
-RUN apk add --no-cache \
+RUN apt-get update && apt-get install -y \
     gcc \
     g++ \
-    musl-dev \
-    linux-headers
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements and install Python dependencies
 COPY requirements.txt .
