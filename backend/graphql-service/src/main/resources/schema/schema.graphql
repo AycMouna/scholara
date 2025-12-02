@@ -10,6 +10,9 @@ type Mutation {
     createStudent(input: StudentInput!): Student
     updateStudent(id: ID!, input: StudentInput!): Student
     deleteStudent(id: ID!): Boolean
+    createCourse(input: CourseInput!): Course
+    updateCourse(id: ID!, input: CourseInput!): Course
+    deleteCourse(id: ID!): Boolean
 }
 
 type Student {
@@ -34,4 +37,10 @@ type Course {
     description: String
     credits: Int
     students: [Student]
+}
+
+input CourseInput {
+    name: String!
+    description: String
+    credits: Int
 }

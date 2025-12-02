@@ -24,6 +24,13 @@ public class CourseServiceClient {
                 .bodyToFlux(CourseDto.class);
     }
     
+    public Flux<CourseDto> getCoursesByStudentId(Long studentId) {
+        return webClient.get()
+                .uri("/api/courses/student/{studentId}", studentId)
+                .retrieve()
+                .bodyToFlux(CourseDto.class);
+    }
+    
     public Mono<CourseDto> getCourseById(Long id) {
         return webClient.get()
                 .uri("/api/courses/{id}", id)

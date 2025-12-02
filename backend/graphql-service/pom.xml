@@ -84,6 +84,7 @@
     </dependencyManagement>
 
     <build>
+        <!-- Removed the explicit sourceDirectory configuration -->
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
