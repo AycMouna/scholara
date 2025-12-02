@@ -26,4 +26,4 @@ services:
       - key: GRAPHQL_SERVICE_URL
         value: "http://scholara-graphql-service.onrender.com"
     healthCheckPath: /actuator/health
-    port: 8084
+    port: "8084"
