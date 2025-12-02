@@ -10,4 +10,5 @@ protobuf==3.20.0
 accelerate==0.24.1
 sentencepiece==0.2.1
 sacremoses==0.0.53
+numpy<2.0
 
