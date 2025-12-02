@@ -1,7 +1,0 @@
-# Render Blueprint for Scholara Database Only
-# This file deploys only the shared database
-
-databases:
-  - name: scholara-db
-    databaseName: scholara_db
-    plan: free

@@ -18,12 +18,12 @@ services:
       - scholara-network
     restart: unless-stopped
 
-  # Base de données PostgreSQL pour Auth et Course Services
+  # Base de données PostgreSQL pour Course Service
   postgres:
     image: postgres:15-alpine
     container_name: scholara-postgres
     environment:
-      POSTGRES_DB: scholara_db
+      POSTGRES_DB: scholara_courses
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
@@ -34,24 +34,7 @@ services:
       - scholara-network
     restart: unless-stopped
 
-  # Auth Service (Spring Boot)
-  auth-service:
-    build:
-      context: ./backend/auth-service
-      dockerfile: Dockerfile
-    container_name: scholara-auth-service
-    environment:
-      - SPRING_PROFILES_ACTIVE=docker
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/scholara_db
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=postgres
-    ports:
-      - "8085:8085"
-    depends_on:
-      - postgres
-    networks:
-      - scholara-network
-    restart: unless-stopped
+  # Redis and Eureka removed in simplified setup
 
   # Student Service (Spring Boot)
   student-service:
@@ -68,6 +51,7 @@ services:
       - "8081:8081"
     depends_on:
       - mysql
+      # no eureka dependency
     networks:
       - scholara-network
     restart: unless-stopped
@@ -80,7 +64,7 @@ services:
     container_name: scholara-course-service
     environment:
       - DEBUG=False
-      - DB_NAME=scholara_db
+      - DB_NAME=scholara_courses
       - DB_USER=postgres
       - DB_PASSWORD=postgres
       - DB_HOST=postgres
@@ -101,33 +85,8 @@ services:
     container_name: scholara-ai-service
     environment:
       - DEBUG=False
-      - AI_SUMMARIZATION_MODEL=sshleifer/distilbart-cnn-12-6
-      - AI_TRANSLATION_MODEL=t5-small
     ports:
       - "8083:8083"
-    networks:
-      - scholara-network
-    restart: unless-stopped
-
-  # API Gateway (Spring Cloud Gateway)
-  api-gateway:
-    build:
-      context: ./backend/api-gateway
-      dockerfile: Dockerfile
-    container_name: scholara-api-gateway
-    environment:
-      - SERVER_PORT=8084
-      - STUDENT_SERVICE_URL=http://student-service:8081
-      - COURSE_SERVICE_URL=http://course-service:8082
-      - AUTH_SERVICE_URL=http://auth-service:8085
-      - AI_SERVICE_URL=http://ai-service:8083
-    ports:
-      - "8084:8084"
-    depends_on:
-      - student-service
-      - course-service
-      - auth-service
-      - ai-service
     networks:
       - scholara-network
     restart: unless-stopped
@@ -140,10 +99,11 @@ services:
     container_name: scholara-frontend
     ports:
       - "3000:3000"
-    environment:
-      - VITE_API_BASE_URL=http://localhost:8084/api
+    environment: []
     depends_on:
-      - api-gateway
+      - student-service
+      - course-service
+      - ai-service
     networks:
       - scholara-network
     restart: unless-stopped
