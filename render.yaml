@@ -1,10 +1,7 @@
-# Render Blueprint for PostgreSQL Database Only
-# Deploy database first, then services one by one
+# Render Blueprint for Scholara Auth Service Only
+# This file deploys only the Auth Service with database
 
 databases:
-  - name: scholara-postgres
-    plan: hobby
-    ipAllowList: []
+  - name: scholara-db
     databaseName: scholara_db
-    user: scholara_user
-    postgresMajorVersion: 15
+    plan: free
