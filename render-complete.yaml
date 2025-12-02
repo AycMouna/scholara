@@ -1,0 +1,54 @@
+# Render Blueprint for Scholara Services
+# This file deploys the API Gateway and AI Service
+
+services:
+  # API Gateway (Spring Cloud Gateway)
+  - type: web
+    name: scholara-api-gateway
+    runtime: docker
+    plan: starter
+    dockerfilePath: backend/api-gateway/Dockerfile
+    dockerContext: backend/api-gateway
+    envVars:
+      - key: JAVA_OPTS
+        value: "-Xmx512m -Xms256m"
+      - key: SERVER_PORT
+        value: "8084"
+      # Service URLs - these will need to be updated with actual Render service URLs
+      - key: STUDENT_SERVICE_URL
+        value: "http://scholara-student-service.onrender.com"
+      - key: COURSE_SERVICE_URL
+        value: "http://scholara-course-service.onrender.com"
+      - key: AUTH_SERVICE_URL
+        value: "http://scholara-auth-service.onrender.com"
+      - key: AI_SERVICE_URL
+        value: "http://scholara-ai-service.onrender.com"
+      - key: GRAPHQL_SERVICE_URL
+        value: "http://scholara-graphql-service.onrender.com"
+    healthCheckPath: /actuator/health
+    port: 8084
+
+  # AI Service (Django + ML Models)
+  - type: web
+    name: scholara-ai-service
+    runtime: docker
+    plan: starter
+    dockerfilePath: backend/ai-service/Dockerfile
+    dockerContext: backend/ai-service
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.0"
+      - key: DEBUG
+        value: "False"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALLOWED_HOSTS
+        value: "*"
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: AI_SUMMARIZATION_MODEL
+        value: "sshleifer/distilbart-cnn-12-6"
+      - key: AI_TRANSLATION_MODEL
+        value: "t5-small"
+    healthCheckPath: /api/health/
+    port: 8083

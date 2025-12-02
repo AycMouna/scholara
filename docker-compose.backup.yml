@@ -1,0 +1,117 @@
+version: '3.8'
+
+services:
+  # Base de données MySQL pour Student Service
+  mysql:
+    image: mysql:8.0
+    container_name: scholara-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: scholara_students
+      MYSQL_USER: scholara
+      MYSQL_PASSWORD: scholara123
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - scholara-network
+    restart: unless-stopped
+
+  # Base de données PostgreSQL pour Course Service
+  postgres:
+    image: postgres:15-alpine
+    container_name: scholara-postgres
+    environment:
+      POSTGRES_DB: scholara_courses
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - scholara-network
+    restart: unless-stopped
+
+  # Redis and Eureka removed in simplified setup
+
+  # Student Service (Spring Boot)
+  student-service:
+    build:
+      context: ./backend/student-service
+      dockerfile: Dockerfile
+    container_name: scholara-student-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/scholara_students?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=password
+    ports:
+      - "8081:8081"
+    depends_on:
+      - mysql
+      # no eureka dependency
+    networks:
+      - scholara-network
+    restart: unless-stopped
+
+  # Course Service (Django)
+  course-service:
+    build:
+      context: ./backend/course-service
+      dockerfile: Dockerfile
+    container_name: scholara-course-service
+    environment:
+      - DEBUG=False
+      - DB_NAME=scholara_courses
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_HOST=postgres
+      - DB_PORT=5432
+    ports:
+      - "8082:8082"
+    depends_on:
+      - postgres
+    networks:
+      - scholara-network
+    restart: unless-stopped
+
+  # AI Chatbot Service (Django)
+  ai-service:
+    build:
+      context: ./backend/ai-service
+      dockerfile: Dockerfile
+    container_name: scholara-ai-service
+    environment:
+      - DEBUG=False
+    ports:
+      - "8083:8083"
+    networks:
+      - scholara-network
+    restart: unless-stopped
+
+  # Frontend (React)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: scholara-frontend
+    ports:
+      - "3000:3000"
+    environment: []
+    depends_on:
+      - student-service
+      - course-service
+      - ai-service
+    networks:
+      - scholara-network
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+  postgres_data:
+
+networks:
+  scholara-network:
+    driver: bridge
