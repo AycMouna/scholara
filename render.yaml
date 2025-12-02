@@ -1,5 +1,5 @@
-# Render Blueprint for Scholara AI Service Only
-# This file deploys only the AI Service
+# Render Blueprint for Scholara Services
+# This file deploys both the AI Service and GraphQL Service
 
 services:
   # AI Service (Django + ML Models)
@@ -26,3 +26,23 @@ services:
         value: "t5-small"
     healthCheckPath: /api/health/
     port: 8083
+  
+  # GraphQL Service (Spring Boot + DGS)
+  - type: web
+    name: scholara-graphql-service
+    runtime: docker
+    plan: starter
+    dockerfilePath: backend/graphql-service/Dockerfile
+    dockerContext: backend/graphql-service
+    envVars:
+      - key: JAVA_OPTS
+        value: "-Xmx512m -Xms256m"
+      - key: SERVER_PORT
+        value: "8086"
+      # Service URLs - these will need to be updated with actual Render service URLs
+      - key: STUDENT_SERVICE_URL
+        value: "http://scholara-student-service.onrender.com"
+      - key: COURSE_SERVICE_URL
+        value: "http://scholara-course-service.onrender.com"
+    healthCheckPath: /actuator/health
+    port: 8086
