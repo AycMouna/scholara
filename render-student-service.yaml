@@ -13,10 +13,10 @@ services:
       - key: SPRING_PROFILES_ACTIVE
         value: docker
       - key: SPRING_DATASOURCE_URL
-        value: jdbc:mysql://scholara-mysql:3306/scholara_students?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
+        value: jdbc:postgresql://scholara-postgres:5432/scholara_db
       - key: SPRING_DATASOURCE_USERNAME
-        value: root
+        value: postgres
       - key: SPRING_DATASOURCE_PASSWORD
-        value: password
+        value: postgres
     healthCheckPath: /actuator/health
     port: 8081
