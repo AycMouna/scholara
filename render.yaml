@@ -3,6 +3,7 @@
 
 databases:
   - name: scholara-postgres
+    plan: hobby
     ipAllowList: []
     databaseName: scholara_db
     user: scholara_user
