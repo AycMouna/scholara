@@ -66,9 +66,15 @@ docker-compose logs student-service
 - Translation: http://localhost:8083/api/translate/
 - Summarization: http://localhost:8083/api/summarize/
 
+#### GraphQL Service
+- URL: http://localhost:8086
+- GraphQL Endpoint: http://localhost:8086/graphql
+- Health Check: http://localhost:8086/actuator/health
+
 #### API Gateway
 - URL: http://localhost:8084
 - Health Check: http://localhost:8084/actuator/health
+- GraphQL Proxy: http://localhost:8084/graphql
 
 #### Frontend
 - URL: http://localhost:3000
@@ -175,6 +181,7 @@ The AI service uses large models that may require significant memory. If you're 
 | Course        | 8082  | http://localhost:8082 |
 | AI Service    | 8083  | http://localhost:8083 |
 | API Gateway   | 8084  | http://localhost:8084 |
+| GraphQL       | 8086  | http://localhost:8086 |
 | Frontend      | 3000  | http://localhost:3000 |
 
 ## Clean Up

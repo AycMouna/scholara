@@ -1,0 +1,27 @@
+server:
+  port: 8086
+
+spring:
+  application:
+    name: graphql-service
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+# Client configurations for other services
+student-service:
+  url: http://localhost:8081
+
+course-service:
+  url: http://localhost:8082
+
+# Logging
+logging:
+  level:
+    com.scholara.graphql: DEBUG

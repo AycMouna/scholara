@@ -47,3 +47,8 @@ spring:
           filters:
             - RewritePath=/api/(?<segment>.*), /api/${segment}
 
+        - id: graphql-service
+          uri: ${GRAPHQL_SERVICE_URL:http://localhost:8086}
+          predicates:
+            - Path=/graphql/**, /subscriptions/**
+

@@ -47,6 +47,14 @@ curl -f http://localhost:8083/api/health/ 2>nul && (
 )
 
 echo.
+echo Testing GraphQL Service...
+curl -f http://localhost:8086/actuator/health 2>nul && (
+    echo ✅ GraphQL Service is running
+) || (
+    echo ❌ GraphQL Service is not responding
+)
+
+echo.
 echo Testing API Gateway...
 curl -f http://localhost:8084/actuator/health 2>nul && (
     echo ✅ API Gateway is running
