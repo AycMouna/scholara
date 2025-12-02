@@ -1,0 +1,35 @@
+# Render Blueprint for Auth Service Only
+# This file will be automatically detected by Render
+
+services:
+  # PostgreSQL Database
+  - type: pserv
+    name: scholara-postgres
+    plan: starter
+    envVars:
+      - key: POSTGRES_DB
+        value: scholara_db
+      - key: POSTGRES_USER
+        value: postgres
+      - key: POSTGRES_PASSWORD
+        value: postgres
+    diskSizeGB: 10
+
+  # Auth Service (Spring Boot)
+  - type: web
+    name: scholara-auth-service
+    runtime: docker
+    plan: starter
+    dockerfilePath: backend/auth-service/Dockerfile
+    dockerContext: backend/auth-service
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: docker
+      - key: SPRING_DATASOURCE_URL
+        value: jdbc:postgresql://scholara-postgres:5432/scholara_db
+      - key: SPRING_DATASOURCE_USERNAME
+        value: postgres
+      - key: SPRING_DATASOURCE_PASSWORD
+        value: postgres
+    healthCheckPath: /actuator/health
+    port: 8085
