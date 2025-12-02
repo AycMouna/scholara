@@ -3,7 +3,7 @@
 
 services:
   # Frontend (React with Vite)
-  - type: web
+  - type: static
     name: scholara-frontend
     runtime: node
     plan: free
