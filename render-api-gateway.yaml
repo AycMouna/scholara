@@ -1,0 +1,22 @@
+# Render Blueprint for API Gateway
+# Sixth service to deploy
+
+services:
+  # API Gateway (Spring Cloud Gateway)
+  - type: web
+    name: scholara-api-gateway
+    runtime: docker
+    plan: starter
+    dockerfilePath: backend/api-gateway/Dockerfile
+    dockerContext: backend/api-gateway
+    envVars:
+      - key: SERVER_PORT
+        value: "8084"
+      - key: STUDENT_SERVICE_URL
+        value: http://scholara-student-service:8081
+      - key: COURSE_SERVICE_URL
+        value: http://scholara-course-service:8082
+      - key: AUTH_SERVICE_URL
+        value: http://scholara-auth-service:8085
+    healthCheckPath: /actuator/health
+    port: 8084

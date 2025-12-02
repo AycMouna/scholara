@@ -1,0 +1,22 @@
+# Render Blueprint for Student Service
+# Fourth service to deploy
+
+services:
+  # Student Service (Spring Boot)
+  - type: web
+    name: scholara-student-service
+    runtime: docker
+    plan: starter
+    dockerfilePath: backend/student-service/Dockerfile
+    dockerContext: backend/student-service
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: docker
+      - key: SPRING_DATASOURCE_URL
+        value: jdbc:mysql://scholara-mysql:3306/scholara_students?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
+      - key: SPRING_DATASOURCE_USERNAME
+        value: root
+      - key: SPRING_DATASOURCE_PASSWORD
+        value: password
+    healthCheckPath: /actuator/health
+    port: 8081

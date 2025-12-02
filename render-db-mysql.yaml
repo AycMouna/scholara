@@ -1,0 +1,18 @@
+# Render Blueprint for MySQL Database
+# Second service to deploy
+
+services:
+  # MySQL Database for Student Service
+  - type: pserv
+    name: scholara-mysql
+    plan: starter
+    envVars:
+      - key: MYSQL_ROOT_PASSWORD
+        value: password
+      - key: MYSQL_DATABASE
+        value: scholara_students
+      - key: MYSQL_USER
+        value: scholara
+      - key: MYSQL_PASSWORD
+        value: scholara123
+    diskSizeGB: 10

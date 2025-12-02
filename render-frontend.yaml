@@ -1,0 +1,16 @@
+# Render Blueprint for Frontend
+# Last service to deploy
+
+services:
+  # Frontend (React/Vite)
+  - type: web
+    name: scholara-frontend
+    runtime: docker
+    plan: starter
+    dockerfilePath: frontend/Dockerfile
+    dockerContext: frontend
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: http://scholara-api-gateway:8084/api
+    healthCheckPath: /
+    port: 5173
