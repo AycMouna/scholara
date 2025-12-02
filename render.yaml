@@ -24,5 +24,5 @@ services:
         value: "sshleifer/distilbart-cnn-12-6"
       - key: AI_TRANSLATION_MODEL
         value: "t5-small"
-    healthCheckPath: /api/ai/health
+    healthCheckPath: /api/health/
     port: 8083
