@@ -21,7 +21,7 @@ services:
       - key: OPENAI_API_KEY
         sync: false
       - key: AI_SUMMARIZATION_MODEL
-        value: "facebook/bart-large-xsum"
+        value: "sshleifer/distilbart-cnn-12-6"
       - key: AI_TRANSLATION_MODEL
         value: "t5-small"
     healthCheckPath: /api/ai/health

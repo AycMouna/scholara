@@ -32,7 +32,7 @@ def download_translation_models():
 
 def download_summarization_model():
     """Download the summarization model."""
-    model_name = os.getenv('AI_SUMMARIZATION_MODEL') or "facebook/bart-large-xsum"
+    model_name = os.getenv('AI_SUMMARIZATION_MODEL') or "sshleifer/distilbart-cnn-12-6"
     try:
         logger.info(f"Downloading summarization model: {model_name}")
         # Download tokenizer
