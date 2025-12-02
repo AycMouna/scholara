@@ -6,5 +6,5 @@ databases:
     plan: starter
     ipAllowList: []
     databaseName: scholara_db
-    user: postgres
+    user: scholara_user
     postgresMajorVersion: 15
