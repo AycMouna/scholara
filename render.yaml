@@ -16,14 +16,17 @@ services:
         value: prod
       - key: STUDENT_SERVICE_URL
         fromService:
+          type: web
           name: scholara-student-service
-          property: url
+          property: hostport
       - key: COURSE_SERVICE_URL
         fromService:
+          type: web
           name: scholara-course-service
-          property: url
+          property: hostport
       - key: AUTH_SERVICE_URL
         fromService:
+          type: web
           name: scholara-auth-service
-          property: url
+          property: hostport
     healthCheckPath: /actuator/health
