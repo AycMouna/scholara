@@ -10,16 +10,20 @@ services:
     dockerfilePath: backend/api-gateway/Dockerfile
     dockerContext: backend/api-gateway
     envVars:
-      - key: JAVA_OPTS
-        value: "-Xmx512m -Xms256m"
       - key: SERVER_PORT
-        value: "8084"
-      # Service URLs - these will need to be updated with actual Render service URLs
+        value: "8080"
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
       - key: STUDENT_SERVICE_URL
-        value: "http://scholara-student-service.onrender.com"
+        fromService:
+          name: scholara-student-service
+          property: url
       - key: COURSE_SERVICE_URL
-        value: "http://scholara-course-service.onrender.com"
+        fromService:
+          name: scholara-course-service
+          property: url
       - key: AUTH_SERVICE_URL
-        value: "http://scholara-auth-service.onrender.com"
+        fromService:
+          name: scholara-auth-service
+          property: url
     healthCheckPath: /actuator/health
-    port: "8084"
