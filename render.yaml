@@ -3,7 +3,7 @@
 
 services:
   # Frontend (React with Vite)
-  - type: static
+  - type: web
     name: scholara-frontend
     runtime: node
     plan: free
@@ -14,5 +14,4 @@ services:
         value: 18
       - key: VITE_API_BASE_URL
         value: https://scholara-api-gateway.onrender.com
-    staticPublishPath: dist
     healthCheckPath: /
