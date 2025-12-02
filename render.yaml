@@ -2,16 +2,16 @@
 # This file deploys only the Frontend Service
 
 services:
-  # Frontend (React with Vite)
+  # Frontend (React + Vite)
   - type: web
     name: scholara-frontend
-    runtime: node
+    runtime: docker
     plan: free
-    buildCommand: npm run build
-    startCommand: npm run preview
+    dockerfilePath: frontend/Dockerfile
+    dockerContext: frontend
     envVars:
       - key: NODE_VERSION
-        value: 18
+        value: "21.0.0"
       - key: VITE_API_BASE_URL
-        value: https://scholara-api-gateway.onrender.com
+        value: "https://scholara-api-gateway.onrender.com/api"
     healthCheckPath: /
