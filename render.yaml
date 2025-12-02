@@ -6,7 +6,6 @@ services:
   - type: web
     name: scholara-graphql-service
     runtime: docker
-    plan: starter
     dockerfilePath: backend/graphql-service/Dockerfile
     dockerContext: backend/graphql-service
     envVars:
