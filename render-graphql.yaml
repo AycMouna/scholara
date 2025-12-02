@@ -6,18 +6,14 @@ services:
   - type: web
     name: scholara-graphql-service
     runtime: docker
-    plan: starter
     dockerfilePath: backend/graphql-service/Dockerfile
     dockerContext: backend/graphql-service
     envVars:
       - key: JAVA_OPTS
         value: "-Xmx512m -Xms256m"
-      - key: SERVER_PORT
-        value: "8086"
       # Service URLs - these will need to be updated with actual Render service URLs
       - key: STUDENT_SERVICE_URL
         value: "http://scholara-student-service.onrender.com"
       - key: COURSE_SERVICE_URL
         value: "http://scholara-course-service.onrender.com"
     healthCheckPath: /actuator/health
-    port: 8086
