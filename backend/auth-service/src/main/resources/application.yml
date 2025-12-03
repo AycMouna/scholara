@@ -19,5 +19,5 @@ jwt:
   refresh-expiration-days: 7
 
 google:
-  client-id: 763222237672-p7a5r26ck93v8a4jkmd0eb8uf61lvkko.apps.googleusercontent.com
+  client-id: 763222237672-fdpueg98fcta3udt2cbkqrlarg97o5hs.apps.googleusercontent.com
 
