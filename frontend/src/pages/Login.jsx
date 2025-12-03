@@ -50,7 +50,7 @@ function Login() {
     window.google.accounts.id.renderButton(googleButtonRef.current, {
       theme: 'outline',
       size: 'large',
-      width: '100%',
+      width: 250,
       text: 'signin_with',
     });
   };
