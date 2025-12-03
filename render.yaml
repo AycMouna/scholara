@@ -6,14 +6,24 @@ services:
   - type: web
     name: scholara-student-service
     runtime: docker
-    plan: free
+    plan: starter
     dockerfilePath: backend/student-service/Dockerfile
     dockerContext: backend/student-service
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
+      - key: SPRING_DATASOURCE_URL
+        fromDatabase:
+          name: scholara-db
+          property: connectionString
+      - key: SPRING_DATASOURCE_USERNAME
+        fromDatabase:
+          name: scholara-db
+          property: user
       - key: SPRING_DATASOURCE_PASSWORD
         fromDatabase:
           name: scholara-db
           property: password
+      - key: SPRING_JPA_DATABASE_PLATFORM
+        value: org.hibernate.dialect.PostgreSQLDialect
     healthCheckPath: /actuator/health
