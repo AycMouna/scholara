@@ -27,17 +27,17 @@ spring:
             maxAge: 3600
       routes:
         - id: student-service
-          uri: ${STUDENT_SERVICE_URL:http://localhost:8081}
+          uri: ${STUDENT_SERVICE_URL:https://scholara-student-service-7u6e.onrender.com}
           predicates:
             - Path=/api/students/**
 
         - id: course-service
-          uri: ${COURSE_SERVICE_URL:http://localhost:8082}
+          uri: ${COURSE_SERVICE_URL:https://scholara-course-service-wq5j.onrender.com}
           predicates:
             - Path=/api/courses/**, /api/enrollments/**, /health/**
 
         - id: auth-service
-          uri: ${AUTH_SERVICE_URL:http://scholara-auth-service.onrender.com}
+          uri: ${AUTH_SERVICE_URL:http://scholara-auth-service-jmaj.onrender.com}
           predicates:
             - Path=/api/auth/**
 
