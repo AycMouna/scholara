@@ -1,5 +1,6 @@
 # Render Blueprint for Scholara Microservices Platform
 # Deploying Student Service only
+# Commit timestamp: 2025-12-03
 
 services:
   # Student Service (Spring Boot with GraphQL)
