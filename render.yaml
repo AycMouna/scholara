@@ -1,18 +1,15 @@
-# Render Blueprint for Scholara Frontend Only
-# This file deploys only the Frontend Service
+# Render Blueprint for Scholara API Gateway Service
+# This will trigger a new deployment
 
 services:
-  # Frontend (React + Vite)
   - type: web
-    name: scholara-frontend
+    name: scholara-api-gateway
     runtime: docker
-    plan: free
-    dockerfilePath: frontend/Dockerfile
-    dockerContext: frontend
+    plan: starter
+    dockerfilePath: backend/api-gateway/Dockerfile
+    dockerContext: backend/api-gateway
+    healthCheckPath: /actuator/health
+    port: 8084
     envVars:
-      - key: NODE_VERSION
-        value: "21.0.0"
-      - key: VITE_API_BASE_URL
-        value: "https://scholara-api-gateway.onrender.com/api"
-    healthCheckPath: /
-    port: 8080
+      - key: SERVER_PORT
+        value: "8084"
