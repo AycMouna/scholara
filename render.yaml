@@ -1,4 +1,4 @@
-# Render Blueprint for Scholara Services
+# Render Blueprint for Scholara Student Service Only
 # This file deploys only the Student Service
 
 services:
@@ -6,20 +6,14 @@ services:
   - type: web
     name: scholara-student-service
     runtime: docker
-    plan: starter
+    plan: free
     dockerfilePath: backend/student-service/Dockerfile
     dockerContext: backend/student-service
     envVars:
-      - key: JAVA_OPTS
-        value: "-Xmx512m -Xms256m"
-      - key: PORT
-        value: "10000"
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: SPRING_DATASOURCE_PASSWORD
+        fromDatabase:
+          name: scholara-db
+          property: password
     healthCheckPath: /actuator/health
-    port: 10000
-
-# Note: Database declaration removed as it likely already exists on Render
-# databases:
-#   - name: scholara-postgres-db
-#     databaseName: scholara_db
-#     user: postgres
-#     plan: free
