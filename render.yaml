@@ -1,15 +1,65 @@
-# Render Blueprint for Scholara API Gateway Service
-# This will trigger a new deployment
+# Render Blueprint for Scholara Services
+# This file deploys the Frontend, Course Service, Student Service and Database
 
 services:
+  # Student Service (Spring Boot)
   - type: web
-    name: scholara-api-gateway
+    name: scholara-student-service
     runtime: docker
     plan: starter
-    dockerfilePath: backend/api-gateway/Dockerfile
-    dockerContext: backend/api-gateway
-    healthCheckPath: /actuator/health
-    port: 8084
+    dockerfilePath: backend/student-service/Dockerfile
+    dockerContext: backend/student-service
     envVars:
+      - key: JAVA_OPTS
+        value: "-Xmx512m -Xms256m"
       - key: SERVER_PORT
-        value: "8084"
+        value: "8081"
+    healthCheckPath: /actuator/health
+    port: 8081
+
+  # Course Service (Django)
+  - type: web
+    name: scholara-course-service
+    runtime: docker
+    plan: starter
+    dockerfilePath: backend/course-service/Dockerfile
+    dockerContext: backend/course-service
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.0"
+      - key: DEBUG
+        value: "False"
+      - key: DB_NAME
+        value: "scholara_db"
+      - key: DB_USER
+        value: "postgres"
+      - key: DB_PASSWORD
+        value: "postgres"
+      - key: DB_HOST
+        value: "scholara-postgres-db"  # This will be the Render database service name
+      - key: DB_PORT
+        value: "5432"
+    healthCheckPath: /health/
+    port: 8082
+
+  # Frontend (React + Vite)
+  - type: web
+    name: scholara-frontend
+    runtime: docker
+    plan: free
+    dockerfilePath: frontend/Dockerfile
+    dockerContext: frontend
+    envVars:
+      - key: NODE_VERSION
+        value: "21.0.0"
+      - key: VITE_API_BASE_URL
+        value: "https://scholara-course-service.onrender.com/api"
+    healthCheckPath: /
+    port: 8080
+
+# Note: Database declaration removed as it likely already exists on Render
+# databases:
+#   - name: scholara-postgres-db
+#     databaseName: scholara_db
+#     user: postgres
+#     plan: free
