@@ -1,5 +1,5 @@
 # Render Blueprint for Scholara Services
-# This file deploys the Frontend, Course Service, Student Service and Database
+# This file deploys only the Student Service
 
 services:
   # Student Service (Spring Boot)
@@ -16,46 +16,6 @@ services:
         value: "8081"
     healthCheckPath: /actuator/health
     port: 8081
-
-  # Course Service (Django)
-  - type: web
-    name: scholara-course-service
-    runtime: docker
-    plan: starter
-    dockerfilePath: backend/course-service/Dockerfile
-    dockerContext: backend/course-service
-    envVars:
-      - key: PYTHON_VERSION
-        value: "3.11.0"
-      - key: DEBUG
-        value: "False"
-      - key: DB_NAME
-        value: "scholara_db"
-      - key: DB_USER
-        value: "postgres"
-      - key: DB_PASSWORD
-        value: "postgres"
-      - key: DB_HOST
-        value: "scholara-postgres-db"  # This will be the Render database service name
-      - key: DB_PORT
-        value: "5432"
-    healthCheckPath: /health/
-    port: 8082
-
-  # Frontend (React + Vite)
-  - type: web
-    name: scholara-frontend
-    runtime: docker
-    plan: free
-    dockerfilePath: frontend/Dockerfile
-    dockerContext: frontend
-    envVars:
-      - key: NODE_VERSION
-        value: "21.0.0"
-      - key: VITE_API_BASE_URL
-        value: "https://scholara-course-service.onrender.com/api"
-    healthCheckPath: /
-    port: 8080
 
 # Note: Database declaration removed as it likely already exists on Render
 # databases:
