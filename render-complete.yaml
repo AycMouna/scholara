@@ -2,6 +2,27 @@
 # This file deploys the API Gateway and AI Service
 
 services:
+  # Auth Service (Spring Boot)
+  - type: web
+    name: scholara-auth-service
+    runtime: docker
+    plan: starter
+    dockerfilePath: backend/auth-service/Dockerfile
+    dockerContext: backend/auth-service
+    envVars:
+      - key: JAVA_OPTS
+        value: "-Xmx512m -Xms256m"
+      - key: SERVER_PORT
+        value: "8085"
+      - key: admin.email
+        value: "admin@scholara.com"
+      - key: admin.password
+        value: "admin123"
+      - key: admin.fullname
+        value: "Administrator"
+    healthCheckPath: /actuator/health
+    port: 8085
+
   # API Gateway (Spring Cloud Gateway)
   - type: web
     name: scholara-api-gateway
