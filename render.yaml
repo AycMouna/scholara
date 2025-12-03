@@ -2,11 +2,11 @@
 # This file deploys only the Student Service
 
 services:
-  # Student Service (Spring Boot)
+  # Student Service (Spring Boot)h
   - type: web
     name: scholara-student-service
     runtime: docker
-    plan: starter
+    plan: free
     dockerfilePath: backend/student-service/Dockerfile
     dockerContext: backend/student-service
     envVars:
