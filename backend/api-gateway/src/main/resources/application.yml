@@ -37,7 +37,7 @@ spring:
             - Path=/api/courses/**, /api/enrollments/**, /health/**
 
         - id: auth-service
-          uri: ${AUTH_SERVICE_URL:http://localhost:8085}
+          uri: ${AUTH_SERVICE_URL:http://scholara-auth-service.onrender.com}
           predicates:
             - Path=/api/auth/**
 
