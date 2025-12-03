@@ -42,16 +42,25 @@ public class AuthController {
     
     @PostConstruct
     public void createDefaultAdmin() {
-        if (!userRepository.existsByEmail(adminEmail)) {
-            User admin = User.builder()
-                .fullName(adminFullname)
-                .email(adminEmail)
-                .passwordHash(passwordEncoder.encode(adminPassword))
-                .role(Role.ADMIN)
-                .active(true)
-                .build();
-            userRepository.save(admin);
-            System.out.println("Default admin user created: " + adminEmail);
+        System.out.println("Attempting to create default admin user...");
+        try {
+            if (!userRepository.existsByEmail(adminEmail)) {
+                System.out.println("Creating admin user with email: " + adminEmail);
+                User admin = User.builder()
+                    .fullName(adminFullname)
+                    .email(adminEmail)
+                    .passwordHash(passwordEncoder.encode(adminPassword))
+                    .role(Role.ADMIN)
+                    .active(true)
+                    .build();
+                userRepository.save(admin);
+                System.out.println("Default admin user created: " + adminEmail);
+            } else {
+                System.out.println("Admin user already exists: " + adminEmail);
+            }
+        } catch (Exception e) {
+            System.err.println("Error creating default admin user: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 

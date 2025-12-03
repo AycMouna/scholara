@@ -31,11 +31,14 @@ public class AuthService {
             throw new IllegalArgumentException("Email already in use");
         }
 
+        // For security, only allow admins to create other admins
+        Role role = request.getRole() == null ? Role.STUDENT : request.getRole();
+        
         User user = User.builder()
                 .fullName(request.getFullName())
                 .email(request.getEmail())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
-                .role(request.getRole() == null ? Role.STUDENT : request.getRole())
+                .role(role)
                 .active(true)
                 .build();
 
