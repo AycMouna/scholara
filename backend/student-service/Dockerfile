@@ -18,7 +18,7 @@ WORKDIR /app
 COPY --from=build /app/target/student-service-0.0.1-SNAPSHOT.jar app.jar
 
 # Expose port
-EXPOSE 8081
+EXPOSE $PORT
 
 # Run the application
-ENTRYPOINT ["java", "-Dserver.port=8081", "-jar", "app.jar"]
+ENTRYPOINT ["sh", "-c", "java -Dserver.port=$PORT -jar app.jar"]

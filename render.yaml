@@ -12,10 +12,10 @@ services:
     envVars:
       - key: JAVA_OPTS
         value: "-Xmx512m -Xms256m"
-      - key: SERVER_PORT
-        value: "8081"
+      - key: PORT
+        value: "10000"
     healthCheckPath: /actuator/health
-    port: 8081
+    port: 10000
 
 # Note: Database declaration removed as it likely already exists on Render
 # databases:
